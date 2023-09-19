@@ -117,7 +117,6 @@ import "reset-css";
 import {
   HTMLAttributes,
   PropType,
-  StyleHTMLAttributes,
   StyleValue,
   computed,
   nextTick,
@@ -157,7 +156,7 @@ const props = defineProps({
    * an object, make sure to specify the props `labelField` and `trackByKey`
    */
   options: {
-    type: Object as PropType<String[] | Record<string, any>[]>,
+    type: Object as PropType<string[] | Record<string, any>[]>,
     required: true,
   },
 
@@ -279,7 +278,7 @@ const props = defineProps({
    * when searching.
    */
   searchHandler: {
-    type: Object as PropType<(option: Option) => boolean>,
+    type: Object as PropType<(option: OptionValue) => boolean>,
     default: null,
   },
 });
