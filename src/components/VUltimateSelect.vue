@@ -2,10 +2,7 @@
   <div
     ref="container"
     class="select-container"
-    :class="{
-      open: open === true,
-      closed: open === false,
-    }"
+    :class="classes"
     @click.stop.prevent
   >
     <div
@@ -47,7 +44,10 @@
       />
     </div>
 
-    <Teleport to="body">
+    <Teleport
+      to="body"
+      :disabled="listbox"
+    >
       <Transition
         mode="in-out"
         @before-enter="state = 'opening'"
@@ -56,14 +56,12 @@
         @after-enter="showScrollbarIfNecessary"
       >
         <div
-          v-if="open"
+          v-if="open || listbox"
           :id="`${nodeId}-select-list-container`"
           ref="menu"
-          :style="floatingStyles"
+          :style="listbox ? {} : floatingStyles"
           class="select-list-container"
-          :class="{
-            open: open === true,
-          }"
+          :class="classes"
           @keydown.tab.enter.prevent="open = false"
           @keydown.arrow-down.arrow-up.prevent
         >
@@ -116,7 +114,16 @@
 
 <script setup lang="ts">
 import "reset-css";
-import { HTMLAttributes, PropType, computed, nextTick, ref, watch } from "vue";
+import {
+  HTMLAttributes,
+  PropType,
+  StyleHTMLAttributes,
+  StyleValue,
+  computed,
+  nextTick,
+  ref,
+  watch,
+} from "vue";
 import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
 import { useElementSize, useResizeObserver } from "@vueuse/core";
@@ -182,6 +189,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  listbox: {
+    type: Boolean,
+    default: false,
+  },
   /*   searchHandler: {
     type: Object as PropType<(option: Option) => boolean>,
     default: () => true,
@@ -215,10 +226,17 @@ const { floatingStyles } = useFloating(activator, menu, {
     size({
       apply({ availableWidth, availableHeight, elements }) {
         // Do things with the data, e.g.
-        Object.assign(elements.floating.style, {
-          width: `${boxWidth.value}px`,
+        const declarations: StyleValue = {
           maxHeight: `${props.dropDownMaxHeight}px`,
-        });
+        };
+
+        // only need to match the width of the activator if we're a
+        // regular combo box
+        if (!props.listbox) {
+          declarations.width = `${boxWidth.value}px`;
+        }
+
+        Object.assign(elements.floating.style, declarations);
       },
     }),
     flip({
@@ -243,6 +261,13 @@ const { activate, deactivate } = useFocusTrap(menu, {
     return e.key === "ArrowDown";
   },
 });
+
+const classes = computed(() => [
+  open ? "open" : "closed",
+  {
+    listbox: props.listbox,
+  },
+]);
 
 watch(open, async (val) => {
   await nextTick();
@@ -493,6 +518,16 @@ function generateId() {
   }
 }
 
+.listbox {
+  & .select-box {
+    /* border-radius: 0.5rem 0.5rem 0 0; */
+    display: none;
+  }
+
+  &.select-list-container {
+    border-radius: 0.5rem;
+  }
+}
 .tag {
   white-space: nowrap;
   font-size: 0.6em;

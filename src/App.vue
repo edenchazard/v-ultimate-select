@@ -47,6 +47,18 @@
         <label for="multiple">Select multiple</label>
         <p>Multiple items will be returned as IDs inside an array.</p>
       </div>
+      <input
+        type="checkbox"
+        v-model="config.listbox"
+        id="multiple"
+      />
+      <div>
+        <label for="multiple">Listbox style</label>
+        <p>
+          It's a thing. The options will be displayed as a list instead of a
+          dropdown.
+        </p>
+      </div>
     </div>
 
     <div>Selected IDs: {{ ids }}</div>
@@ -75,6 +87,7 @@ const config = reactive({
   closeOnSelect: true,
   showSearch: true,
   multiple: false,
+  listbox: false,
 });
 
 const values = ref([]);
