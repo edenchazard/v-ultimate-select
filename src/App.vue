@@ -1,6 +1,6 @@
 <template>
   <div id="content">
-    <h1>Vue Ultimate Select</h1>
+    <h1>Vue Angry Select</h1>
     <section>
       <p>
         An accessible and customisable select dropdown for Vue that transcends
@@ -10,7 +10,7 @@
         <strong class="bold">One select to rule them all.</strong>
       </p>
     </section>
-    <VUltimateSelect
+    <VueAngrySelect
       :options="[...options, ...options2]"
       :="config"
       class="tags"
@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import VUltimateSelect from "./components/VUltimateSelect.vue";
+import VueAngrySelect from "./components/VueAngrySelect.vue";
 
 const options = ["John", "Lauren", "Michelle", "Mike"];
 

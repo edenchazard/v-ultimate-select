@@ -1,9 +1,12 @@
 {
-  "name": "v-ultimate-select",
+  "name": "vue-angry-select",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "author": "Charley Reeson (https://chazza.me)",
+  "repository": {
+    "url": "https://github.com/edenchazard/vue-angry-select"
+  },
   "scripts": {
     "serve": "vite --host",
     "build": "vite build",
