@@ -16,6 +16,7 @@
       class="tags"
       v-model:ids="ids"
       v-model:values="values"
+      :search-handler="config.customMatcher ? customMatcher : null"
       @selected="(key, value) => (selected = { key, value })"
     />
     <h2>Configuration</h2>
@@ -59,6 +60,18 @@
           dropdown.
         </p>
       </div>
+      <input
+        type="checkbox"
+        v-model="config.customMatcher"
+        id="custom-matcher"
+      />
+      <div>
+        <label for="custom-matcher">Custom filtering</label>
+        <p>
+          Apply custom filtering for the search. Enable this and only options
+          starting with your search string exactly will be returned!
+        </p>
+      </div>
     </div>
 
     <div>Selected IDs: {{ ids }}</div>
@@ -88,11 +101,16 @@ const config = reactive({
   showSearch: true,
   multiple: false,
   listbox: false,
+  customMatcher: false,
 });
 
 const values = ref([]);
 const ids = ref([]);
 const selected = ref({ key: null, value: null });
+
+function customMatcher(search: string, option: OptionValue): boolean {
+  return option.value.toString().startsWith(search);
+}
 </script>
 
 <style scoped>
@@ -111,6 +129,7 @@ const selected = ref({ key: null, value: null });
   grid-template-columns: auto auto;
   align-items: center;
   row-gap: 0.5rem;
+  column-gap: 1rem;
 
   & label {
     font-weight: bold;

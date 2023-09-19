@@ -8,3 +8,9 @@ type OptionKey = number | string;
 type OptionsMap = Map<OptionKey, OptionValue>;
 
 type SelectValue = OptionKey | OptionKey[];
+
+type MatcherCallback = (
+  search: string,
+  value: OptionValue,
+  key: OptionKey
+) => boolean;

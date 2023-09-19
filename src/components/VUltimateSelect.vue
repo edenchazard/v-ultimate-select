@@ -125,7 +125,7 @@ import {
 } from "vue";
 import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
-import { useElementSize, useResizeObserver } from "@vueuse/core";
+import { ArgumentsType, useElementSize, useResizeObserver } from "@vueuse/core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const props = defineProps({
@@ -272,13 +272,11 @@ const props = defineProps({
   },
 
   /**
-   * TODO
-   *
    * A callback that defines how the combobox will filter options
    * when searching.
    */
   searchHandler: {
-    type: Object as PropType<(option: OptionValue) => boolean>,
+    type: null as unknown as PropType<MatcherCallback | null>,
     default: null,
   },
 });
@@ -428,16 +426,32 @@ const internalOptions = computed(() => {
 const filteredOptionsList = computed(() => {
   // no search applied
   if (search.value === "") {
-    return [...internalOptions.value];
+    return internalOptions.value;
   }
 
+  const defaultSearchMatcher: MatcherCallback = (
+    search: string,
+    value: OptionValue
+  ) =>
+    (value[props.labelField].toString() as string)
+      .toLowerCase()
+      .trim()
+      .indexOf(search.toLowerCase()) !== -1;
+
+  // we should use the user-provided callback if given.
+  const matchesCriteria = props.searchHandler
+    ? props.searchHandler
+    : defaultSearchMatcher;
+
   const filtered = new Map<OptionKey, OptionValue>();
+
   [...internalOptions.value].forEach(([key, value]) => {
     // matches the filter
-    if (value[props.trackByKey].toString().indexOf(search.value) !== -1) {
+    if (matchesCriteria(search.value, value, key)) {
       filtered.set(key, value);
     }
   });
+
   return filtered;
 });
 
