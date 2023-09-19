@@ -125,7 +125,7 @@ import {
 } from "vue";
 import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
-import { ArgumentsType, useElementSize, useResizeObserver } from "@vueuse/core";
+import { useElementSize } from "@vueuse/core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const props = defineProps({
@@ -466,7 +466,7 @@ const selected = computed(() => {
   return get(props.ids as OptionKey);
 });
 
-function selectOption(e: PointerEvent) {
+function selectOption<T extends Event>(e: T) {
   if (!(e.target instanceof HTMLElement)) return;
 
   const key = e.target.dataset.key;
