@@ -15,13 +15,16 @@
       :aria-owns="`${nodeId}-select-list-container`"
       :aria-multiselectable="multiple"
       :aria-placeholder="placeholder"
-      @click="openIfNotClosing"
-      @keyup.enter.space.prevent="openIfNotClosing"
     >
-      <div class="select-box-selections">
+      <div
+        class="select-box-selections"
+        @click="openIfNotClosing"
+        @keyup.enter.space.prevent="openIfNotClosing"
+      >
         <span v-if="ids.length === 0">
           {{ placeholder }}
         </span>
+
         <div
           v-else-if="multiple"
           v-for="value in selected"
@@ -38,13 +41,29 @@
               ✖
             </span> -->
         </div>
+
         <div v-else>
           {{ selected }}
         </div>
       </div>
+
+      <button
+        title="Clear selection"
+        type="button"
+        class="select-clear"
+      >
+        <FontAwesomeIcon
+          class="select-box-button clear"
+          icon="x"
+          @click="clear"
+        />
+      </button>
+
       <FontAwesomeIcon
-        class="caret"
+        class="select-box-button caret"
         icon="caret-down"
+        @click="openIfNotClosing"
+        @keyup.enter.space.prevent="openIfNotClosing"
       />
     </div>
 
@@ -301,6 +320,11 @@ const emit = defineEmits<{
   (event: "close"): void;
 
   /**
+   * Emitted whenever the combobox is cleared.
+   */
+  (event: "clear"): void;
+
+  /**
    * Emitted whenever an option has been selected.
    */
   (event: "selected", key: OptionKey, value: OptionValue): void;
@@ -521,6 +545,10 @@ function openIfNotClosing() {
   if (!open.value && state.value === "none") open.value = true;
 }
 
+function clear() {
+  emit("update:ids", []);
+  emit("clear");
+}
 /**
  * HELPERS
  */
@@ -610,6 +638,16 @@ function generateId() {
   > .caret {
     transform: rotate(0deg);
     transition: transform 0.5s;
+  }
+
+  & .select-clear {
+    padding: 0;
+    margin: 0;
+    background: inherit;
+  }
+  & .select-box-button {
+    padding: 0 1rem;
+    cursor: pointer;
   }
 }
 
