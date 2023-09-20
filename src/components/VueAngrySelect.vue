@@ -621,11 +621,9 @@ function generateId() {
 .select-box {
   display: flex;
   align-items: center;
-  box-sizing: border-box;
   border: 1px solid lightgray;
   border-radius: 0.5rem;
   outline-offset: -2px;
-  padding: 0.5rem;
 
   &:hover {
     border-color: lightblue;
@@ -654,11 +652,15 @@ function generateId() {
 .select-box-selections {
   gap: 0.5rem;
   overflow: hidden;
-  height: 100%;
-  box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.select-box-selections,
+.caret,
+.select-clear {
+  padding: 0.5rem;
 }
 
 .select-search-container {
