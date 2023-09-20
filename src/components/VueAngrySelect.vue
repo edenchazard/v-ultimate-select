@@ -374,7 +374,7 @@ const { activate, deactivate } = useFocusTrap(menu, {
 });
 
 const classes = computed(() => [
-  open ? "open" : "closed",
+  open.value ? "open" : "closed",
   {
     listbox: props.listbox,
   },
