@@ -1,6 +1,6 @@
 <template>
   <div id="content">
-    <h1>Vue Angry Select</h1>
+    <h1>😡 Vue Angry Select</h1>
     <section>
       <p>
         An accessible and customisable select dropdown for Vue that transcends
