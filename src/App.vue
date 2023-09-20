@@ -72,6 +72,17 @@
           starting with your search string exactly will be returned!
         </p>
       </div>
+      <input
+        type="text"
+        v-model="config.placeholder"
+        id="placeholder"
+      />
+      <div>
+        <label for="placeholder">Placeholder</label>
+        <p>
+          Add a spicy hint to the select whenever there's no options selected.
+        </p>
+      </div>
     </div>
 
     <div>Selected IDs: {{ ids }}</div>
@@ -102,6 +113,7 @@ const config = reactive({
   multiple: false,
   listbox: false,
   customMatcher: false,
+  placeholder: "Select an option...",
 });
 
 const values = ref([]);
@@ -135,6 +147,16 @@ function customMatcher(search: string, option: OptionValue): boolean {
     font-weight: bold;
   }
 }
+input {
+  padding: 0.25rem;
+  height: 2rem;
+  justify-self: end;
+
+  &[type="checkbox"] {
+    width: 2rem;
+  }
+}
+
 .bold {
   font-weight: bold;
 }

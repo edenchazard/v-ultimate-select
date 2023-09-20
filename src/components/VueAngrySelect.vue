@@ -14,12 +14,16 @@
       :aria-expanded="open"
       :aria-owns="`${nodeId}-select-list-container`"
       :aria-multiselectable="multiple"
+      :aria-placeholder="placeholder"
       @click="openIfNotClosing"
       @keyup.enter.space.prevent="openIfNotClosing"
     >
       <div class="select-box-selections">
+        <span v-if="ids.length === 0">
+          {{ placeholder }}
+        </span>
         <div
-          v-if="multiple"
+          v-else-if="multiple"
           v-for="value in selected"
           :key="value"
           class="tag"
@@ -185,7 +189,7 @@ const props = defineProps({
    * If no option has been picked, the placeholder text will appear.
    */
   placeholder: {
-    type: String,
+    type: null as unknown as PropType<string | null>,
     default: "Select...",
   },
 
