@@ -5,25 +5,6 @@
     :class="classes"
     @click.stop.prevent
   >
-    <Teleport
-      to="body"
-      v-if="isAngry"
-    >
-      <div class="blackout bigZ"></div>
-    </Teleport>
-    <div
-      class="angry-top"
-      v-if="isAngry"
-    >
-      <img
-        src="../assets/angry-eyes.svg"
-        class="eyes"
-      />
-      <img
-        src="../assets/anger-symbol.svg"
-        class="anger-symbol"
-      />
-    </div>
     <div
       :id="nodeId"
       ref="activator"
@@ -34,7 +15,6 @@
       :aria-owns="`${nodeId}-select-list-container`"
       :aria-multiselectable="multiple"
       :aria-placeholder="placeholder"
-      :class="{ 'bigZ shake': isAngry }"
     >
       <div
         class="select-box-selections"
@@ -86,12 +66,7 @@
         @keyup.enter.space.prevent="openIfNotClosing"
       />
     </div>
-    <div
-      v-if="isAngry"
-      class="frown bigZ"
-    >
-      (
-    </div>
+
     <Teleport
       to="body"
       :disabled="listbox"
@@ -370,7 +345,6 @@ const emit = defineEmits<{
 const activator = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 const optionList = ref<HTMLUListElement>();
-const isAngry = ref(false);
 
 const search = ref("");
 const open = ref<boolean>(false);
@@ -592,15 +566,6 @@ function generateId() {
     if (menu.value)
       menu.value.querySelector<HTMLButtonElement>(':not([disabled])')?.focus();
   } */
-
-function makeMeAngy() {
-  isAngry.value = true;
-}
-function makeMeLessAngy() {
-  isAngry.value = false;
-}
-
-defineExpose({ makeMeAngy, makeMeLessAngy });
 </script>
 
 <style>
@@ -643,8 +608,6 @@ defineExpose({ makeMeAngy, makeMeLessAngy });
 }
 
 .select-container {
-  position: relative;
-
   &.open .caret {
     transform: rotate(180deg);
   }
@@ -764,10 +727,6 @@ defineExpose({ makeMeAngy, makeMeLessAngy });
   overflow: auto !important;
 }
 
-/**
-* transitions
-*/
-
 .v-enter-active,
 .v-leave-active {
   transition: max-height 0.5s ease;
@@ -776,197 +735,5 @@ defineExpose({ makeMeAngy, makeMeLessAngy });
 .v-enter-from,
 .v-leave-to {
   max-height: 0 !important;
-}
-
-/**
- * some fun things
- */
-.bigZ {
-  position: relative;
-  z-index: 200;
-}
-
-.angry-top {
-  position: relative;
-  top: -20rem;
-}
-.eyes {
-  z-index: 201;
-  aspect-ratio: 1;
-  width: 25rem;
-  position: absolute;
-  top: -2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  filter: invert(1);
-  opacity: 0;
-  animation:
-    0.5s ease-in 1.4s 1 forwards fade1,
-    500ms linear 1.8s shake-translateX infinite;
-}
-
-.anger-symbol {
-  z-index: 201;
-  aspect-ratio: 1;
-  position: absolute;
-  right: 4rem;
-  top: 1rem;
-  width: 5rem;
-  opacity: 0;
-  animation:
-    0.5s ease-in 1.4s 1 forwards fade1,
-    500ms linear 1.8s shake-rotate infinite;
-}
-
-.frown {
-  z-index: 201;
-  font-size: 17rem;
-  opacity: 0;
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, 4rem) rotate(90deg);
-  animation:
-    0.5s ease-in 1.4s 1 forwards fade1,
-    500ms linear 1.8s rotate90shake infinite;
-}
-
-.blackout {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  background: #000;
-  animation: 1s ease-in forwards fade7;
-}
-
-.select-box.bigZ {
-  z-index: 201;
-  animation: 500ms linear 1.4s shake-rotate infinite;
-}
-
-@keyframes fade7 {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes fade1 {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes rotate90shake {
-  0% {
-    transform: translate(1rem, 4rem) rotate(90deg);
-  }
-  10% {
-    transform: translate(-1rem, 4rem) rotate(90deg);
-  }
-  20% {
-    transform: translate(0rem, 4rem) rotate(90deg);
-  }
-  30% {
-    transform: translate(1rem, 4rem) rotate(90deg);
-  }
-  40% {
-    transform: translate(-1rem, 4rem) rotate(90deg);
-  }
-  50% {
-    transform: translate(1rem, 4rem) rotate(90deg);
-  }
-  60% {
-    transform: translate(0rem, 4rem) rotate(90deg);
-  }
-  70% {
-    transform: translate(-1rem, 4rem) rotate(90deg);
-  }
-  80% {
-    transform: translate(1rem, 4rem) rotate(90deg);
-  }
-  90% {
-    transform: translate(-1rem, 4rem) rotate(90deg);
-  }
-  100% {
-    transform: translate(1rem, 4rem) rotate(90deg);
-  }
-}
-@keyframes shake-translateX {
-  0% {
-    transform: translateX(-48%);
-  }
-  10% {
-    transform: translateX(-52%);
-  }
-  20% {
-    transform: translateX(-48%);
-  }
-  30% {
-    transform: translateX(-52%);
-  }
-  40% {
-    transform: translateX(-48%);
-  }
-  50% {
-    transform: translateX(-52%);
-  }
-  60% {
-    transform: translateX(-48%);
-  }
-  70% {
-    transform: translateX(-52%);
-  }
-  80% {
-    transform: translateX(-48%);
-  }
-  90% {
-    transform: translateX(-52%);
-  }
-  100% {
-    transform: translateX(-48%);
-  }
-}
-
-@keyframes shake-rotate {
-  0% {
-    transform: rotate(0deg) translateX(-1rem);
-  }
-  10% {
-    transform: rotate(-1deg) translateX(1rem);
-  }
-  20% {
-    transform: rotate(1deg) translateX(-1rem);
-  }
-  30% {
-    transform: rotate(0deg) translateX(1rem);
-  }
-  40% {
-    transform: rotate(1deg) translateX(-1rem);
-  }
-  50% {
-    transform: rotate(-1deg) translateX(1rem);
-  }
-  60% {
-    transform: rotate(1deg) translateX(-1rem);
-  }
-  70% {
-    transform: rotate(-1deg) translateX(1rem);
-  }
-  80% {
-    transform: rotate(1deg) translateX(-1rem);
-  }
-  90% {
-    transform: rotate(0deg) translateX(1rem);
-  }
-  100% {
-    transform: rotate(1deg) translateX(-1rem);
-  }
 }
 </style>

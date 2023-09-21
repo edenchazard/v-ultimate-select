@@ -10,27 +10,15 @@
         <strong class="bold">One select to rule them all.</strong>
       </p>
     </section>
-    <div class="simple-container">
-      <VueAngrySelect
-        ref="angrySelect"
-        :options="[...options, ...options2]"
-        :="config"
-        class="tags"
-        v-model:ids="ids"
-        v-model:values="values"
-        :search-handler="config.customMatcher ? customMatcher : null"
-        @selected="(key, value) => (selected = { key, value })"
-      />
-
-      <button
-        type="button"
-        class="happy-button"
-        :class="{ visible: angryInProgress }"
-        @click="imHappyNow"
-      >
-        I'm much happier now! Thank you 😊
-      </button>
-    </div>
+    <VueAngrySelect
+      :options="[...options, ...options2]"
+      :="config"
+      class="tags"
+      v-model:ids="ids"
+      v-model:values="values"
+      :search-handler="config.customMatcher ? customMatcher : null"
+      @selected="(key, value) => (selected = { key, value })"
+    />
     <h2>Configuration</h2>
     <div id="config">
       <input
@@ -108,25 +96,12 @@
         <dd>{{ selected.value }}</dd>
       </dl>
     </div>
-    <h2>Customer satisfaction</h2>
-    <p id="customer-satisfaction">
-      Not impressed?
-      <button
-        type="button"
-        class="dislike-button"
-        @click="makeAngry"
-      >
-        👎 I'm not happy with this, and I'd like you to know.
-      </button>
-    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import VueAngrySelect from "./components/VueAngrySelect.vue";
-
-const angrySelect = ref();
 
 const options = ["John", "Lauren", "Michelle", "Mike"];
 
@@ -147,17 +122,6 @@ const selected = ref({ key: null, value: null });
 
 function customMatcher(search: string, option: OptionValue): boolean {
   return option.value.toString().startsWith(search);
-}
-
-const angryInProgress = ref(false);
-function makeAngry() {
-  angryInProgress.value = true;
-  angrySelect.value?.makeMeAngy();
-}
-
-function imHappyNow() {
-  angryInProgress.value = false;
-  angrySelect.value?.makeMeLessAngy();
 }
 </script>
 
@@ -203,42 +167,5 @@ h1 {
 h2 {
   font-size: 2.5rem;
   line-height: 2.5rem;
-}
-
-.happy-button {
-  display: none;
-  z-index: 201;
-  position: absolute;
-  background-color: rgb(86, 141, 30);
-  transform: translate(-50%, 10rem);
-  opacity: 0;
-  left: 50%;
-
-  &.visible {
-    display: initial;
-    animation: fade-n-drop 1s ease-in 3s 1 forwards;
-  }
-}
-
-#customer-satisfaction {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 3rem;
-  flex-wrap: wrap;
-}
-.dislike-button {
-  background-color: rgb(126, 16, 16);
-}
-
-@keyframes fade-n-drop {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, 10rem);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, 15rem);
-  }
 }
 </style>
