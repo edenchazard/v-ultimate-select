@@ -1,5 +1,5 @@
 type MenuLocation = "auto" | "above" | "below";
-type PropOptions = Array<string | Option>;
+type PropOptions = Array<string | OptionValue>;
 
 type OptionValue = Record<string, any>;
 type OptionKey = number | string;

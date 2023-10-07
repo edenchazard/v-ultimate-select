@@ -3,67 +3,41 @@
     ref="container"
     class="select-container"
     :class="classes"
-    @click.stop.prevent
   >
     <div
       :id="nodeId"
       ref="activator"
       tabindex="0"
       class="select-box"
-      role="listbox"
       :aria-expanded="open"
-      :aria-owns="`${nodeId}-select-list-container`"
       :aria-multiselectable="multiple"
       :aria-placeholder="placeholder"
+      :aria-controls="`${nodeId}-select-list-container`"
+      :aria-activedescendant="
+        null //todo
+      "
+      aria-autocomplete="list"
+      @keydown="handleInputKeyUp"
+      @pointerdown="handleClick"
     >
-      <div
-        class="select-box-selections"
-        @click="openIfNotClosing"
-        @keyup.enter.space.prevent="openIfNotClosing"
-      >
-        <span v-if="ids.length === 0">
-          {{ placeholder }}
-        </span>
+      <MultipleContainer
+        v-if="multiple"
+        :placeholder="placeholder"
+        :values="selected"
+        v-model:search="search"
+        :rows="1"
+        :id="nodeId"
+      />
 
-        <div
-          v-else-if="multiple"
-          v-for="value in selected"
-          :key="value"
-          class="tag"
-        >
-          <span class="value"> {{ value }} </span
-          ><!--
-            <span
-              class="remove"
-              :title="`Renove ${value}`"
-              @click="remove(value)"
-            >
-              ✖
-            </span> -->
-        </div>
-
-        <div v-else>
-          {{ selected }}
-        </div>
-      </div>
-
-      <button
-        title="Clear selection"
-        type="button"
-        class="select-clear"
-      >
-        <FontAwesomeIcon
-          class="select-box-button clear"
-          icon="x"
-          @click="clear"
-        />
-      </button>
-
-      <FontAwesomeIcon
-        class="select-box-button caret"
-        icon="caret-down"
-        @click="openIfNotClosing"
-        @keyup.enter.space.prevent="openIfNotClosing"
+      <SingleContainer
+        v-else
+        :placeholder="placeholder"
+        v-model="search"
+        :id="nodeId"
+      />
+      <InputButtons
+        @open="handleOpenIfNotClosing"
+        @clear="handleClear"
       />
     </div>
 
@@ -80,46 +54,29 @@
       >
         <div
           v-if="open || listbox"
+          :aria-expanded="open"
+          :aria-label="listboxLabel"
           :id="`${nodeId}-select-list-container`"
           ref="menu"
-          :style="listbox ? {} : floatingStyles"
+          role="listbox"
           class="select-list-container"
           :class="classes"
-          @keydown.tab.enter.prevent="open = false"
-          @keydown.arrow-down.arrow-up.prevent
+          :style="listbox ? {} : floatingStyles"
         >
-          <div
-            class="select-search-container"
-            v-if="showSearch"
-          >
-            <FontAwesomeIcon
-              class="magnify"
-              icon="magnifying-glass"
-            />
-            <label :for="`${nodeId}-search`">Search</label>
-            <input
-              v-model="search"
-              class="search"
-              type="search"
-              :id="`${nodeId}-search`"
-            />
-          </div>
           <ul
             class="select-list"
             ref="optionList"
+            v-if="filteredOptionsList.size > 0"
           >
             <li
               v-for="[id, data] in filteredOptionsList"
               :key="id"
+              :id="`${nodeId}-item-${id}`"
               role="option"
               class="select-list-option"
-              :class="{
-                selected: ids.includes(id.toString()),
-              }"
-              tabindex="0"
+              :aria-selected="ids?.includes(id.toString())"
               :data-key="id"
-              @click.prevent="selectOption"
-              @keydown.space.prevent="selectOption"
+              @click="handleOptionSelected"
             >
               <slot
                 name="option"
@@ -129,6 +86,12 @@
               </slot>
             </li>
           </ul>
+          <slot
+            name="noResults"
+            v-else
+          >
+            <p>No results.</p></slot
+          >
         </div>
       </Transition>
     </Teleport>
@@ -138,39 +101,34 @@
 <script setup lang="ts">
 import "reset-css";
 import {
-  HTMLAttributes,
-  PropType,
-  StyleValue,
+  type HTMLAttributes,
+  type StyleValue,
   computed,
   nextTick,
   ref,
   watch,
 } from "vue";
-import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
-import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
 import { useElementSize } from "@vueuse/core";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
+import MultipleContainer from "./MultipleContainer.vue";
+import SingleContainer from "./SingleContainer.vue";
+import InputButtons from "./InputButtons.vue";
+import useFocusOutside from "../composables/useFocusOutside";
 
-const props = defineProps({
+interface Props {
   /**
    * The id of the selected option's value.
    *
    * If `multiple` is true, this will be an array of the option IDs.
    */
-  ids: {
-    type: [String, Array<string>],
-    default: null,
-  },
+  ids: string | string[];
 
   /**
    * TODO
    *
    * wanna make this a v-model of all the selected values
    */
-  values: {
-    type: Object as PropType<OptionValue[] | OptionValue>,
-    default: () => {},
-  },
+  values: OptionValue[] | OptionValue;
 
   /**
    * The options list.
@@ -178,66 +136,45 @@ const props = defineProps({
    * A string array or an array of objects can be passed. If passing
    * an object, make sure to specify the props `labelField` and `trackByKey`
    */
-  options: {
-    type: Object as PropType<string[] | Record<string, any>[]>,
-    required: true,
-  },
+  options: string[] | Record<string, any>[];
 
   /**
    * Allow the user to select multiple options.
    *
    * Works in tandem with `minimumSelections` and `maximumSelections`
    */
-  multiple: {
-    type: Boolean,
-    default: false,
-  },
+  multiple?: boolean;
 
   /**
    * Close the dropdown when an option has been selected.
    *
    * This property has no effect if `listbox` is true.
    */
-  closeOnSelect: {
-    type: Boolean,
-    default: true,
-  },
+  closeOnSelect?: boolean;
 
   /**
    * TODO
    * If no option has been picked, the placeholder text will appear.
    */
-  placeholder: {
-    type: null as unknown as PropType<string | null>,
-    default: "Select...",
-  },
+  placeholder?: string;
 
   /**
    * A unique key for each option that differentiates it from other options
    * in the list.
    */
-  trackByKey: {
-    type: [String, Number] as PropType<OptionKey>,
-    default: "value",
-  },
+  trackByKey?: OptionKey;
 
   /**
    * A key to use for displaying an option's label. This should be the
    * text you'd like to present the user with.
    */
-  labelField: {
-    type: String,
-    default: "value",
-  },
+  labelField?: string;
 
   /**
    * TODO
    * The minimum number of options a user must select.
    */
-  minimumSelections: {
-    type: Number,
-    default: 0,
-  },
+  minimumSelections?: number;
 
   /**
    * TODO
@@ -246,62 +183,59 @@ const props = defineProps({
    * To not restrict the maximum number of options selected, leave this
    * value null.
    */
-  maximumSelections: {
-    type: Number,
-    default: null,
-  },
+  maximumSelections?: number;
 
   /**
    * The max height in pixels for the dropdown.
    */
-  dropDownMaxHeight: {
-    type: Number,
-    default: 300,
-  },
+  dropDownMaxHeight?: number;
 
   /**
    * TODO
    */
-  fullPageIfDropdownTooBig: {
-    type: Boolean,
-    default: true,
-  },
+  fullPageIfDropdownTooBig?: boolean;
 
   /**
    * A html id attribute to give the component.
    *
    * If an id isn't specified, one will be generated automatically.
    */
-  htmlId: {
-    type: String as PropType<HTMLAttributes["id"]>,
-    required: false,
-  },
+  htmlId?: HTMLAttributes["id"];
 
   /**
    * Show the search box. You can specify how the search is performed
    * with the `searchHandler` prop.
    */
-  showSearch: {
-    type: Boolean,
-    default: true,
-  },
+  showSearch?: boolean;
 
   /**
    * Display the options list as a listbox instead of a dropdown.
    */
-  listbox: {
-    type: Boolean,
-    default: false,
-  },
+  listbox?: boolean;
+
+  /**
+   * Aria label for the listbox.
+   */
+  listboxLabel?: string;
 
   /**
    * A callback that defines how the combobox will filter options
    * when searching.
    */
-  searchHandler: {
-    type: null as unknown as PropType<MatcherCallback | null>,
-    default: null,
-  },
+  searchHandler?: MatcherCallback;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  listbox: false,
+  fullPageIfDropdownTooBig: true,
+  dropDownMaxHeight: 300,
+  maximumSelections: 0,
+  minimumSelections: 0,
+  labelField: "value",
+  trackByKey: "value",
+  multiple: false,
+  listboxLabel: "TODO",
+  closeOnSelect: true,
 });
 
 const emit = defineEmits<{
@@ -344,15 +278,20 @@ const emit = defineEmits<{
 
 const activator = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
+const container = ref<HTMLDivElement>();
 const optionList = ref<HTMLUListElement>();
 
-const search = ref("");
+const search = ref<string>("");
 const open = ref<boolean>(false);
 const state = ref<"closing" | "opening" | "none">("none");
 const nodeId = computed(() => props.htmlId ?? generateId());
-const { width: boxWidth } = useElementSize(activator);
 
-const { floatingStyles } = useFloating(activator, menu, {
+const { width: boxWidth } = useElementSize(container);
+const { onFocusOutside, listen, unlisten } = useFocusOutside({
+  listenOnMount: false,
+});
+
+const { floatingStyles } = useFloating(container, menu, {
   strategy: "fixed",
   transform: true,
   whileElementsMounted: autoUpdate,
@@ -380,21 +319,20 @@ const { floatingStyles } = useFloating(activator, menu, {
   ],
 });
 
-const { activate, deactivate } = useFocusTrap(menu, {
-  clickOutsideDeactivates: true,
+// don't really need to do this but it's nice to remove the listener I guess.
+watch(open, (cur) => {
+  (cur ? listen : unlisten)();
+});
 
-  onActivate() {
-    open.value = true;
-  },
-  onDeactivate() {
-    open.value = false;
-  },
-  isKeyBackward(e: KeyboardEvent) {
-    return e.key === "ArrowUp";
-  },
-  isKeyForward(e: KeyboardEvent) {
-    return e.key === "ArrowDown";
-  },
+const selected = computed(() => {
+  const get = (key: OptionKey) =>
+    internalOptions.value.get(parseInt(key))?.[props.trackByKey];
+
+  if (props.multiple && Array.isArray(props.ids)) {
+    return (props.ids as OptionKey[]).map(get);
+  }
+
+  return get(props.ids as OptionKey);
 });
 
 const classes = computed(() => [
@@ -403,17 +341,6 @@ const classes = computed(() => [
     listbox: props.listbox,
   },
 ]);
-
-watch(open, async (val) => {
-  await nextTick();
-
-  if (val) {
-    activate();
-    //focusFirstMenuItem();
-  } else {
-    deactivate();
-  }
-});
 
 const internalOptions = computed(() => {
   // if we're given a key to track by, use that,
@@ -483,18 +410,15 @@ const filteredOptionsList = computed(() => {
   return filtered;
 });
 
-const selected = computed(() => {
-  const get = (key: OptionKey) =>
-    internalOptions.value.get(parseInt(key))?.[props.trackByKey];
+onFocusOutside([menu, container], handleUnfocus);
 
-  if (props.multiple && Array.isArray(props.ids)) {
-    return (props.ids as OptionKey[]).map(get);
-  }
+/* call this after the dropdown animation has finished, so we avoid
+  showing a scrollbar during the animation */
+function showScrollbarIfNecessary() {
+  optionList.value?.classList.toggle("show-scrollbar");
+}
 
-  return get(props.ids as OptionKey);
-});
-
-function selectOption<T extends Event>(e: T) {
+function handleOptionSelected<T extends Event>(e: T) {
   if (!(e.target instanceof HTMLElement)) return;
 
   const key = e.target.dataset.key;
@@ -516,7 +440,6 @@ function selectOption<T extends Event>(e: T) {
   if (props.multiple) {
     const previous = [...new Set(props.ids)];
     const exists = previous.indexOf(key);
-    console.log(exists, previous);
 
     // remove it
     if (exists > -1) {
@@ -527,45 +450,136 @@ function selectOption<T extends Event>(e: T) {
       previous.push(key);
     }
     value = previous;
+    clearSearch();
+  } else {
+    console.log(option.value);
+    search.value = option.value;
   }
 
   emit("update:ids", value);
   emit("selected", key, option);
 }
-
-/* call this after the dropdown animation has finished, so we avoid
-  showing a scrollbar during the animation */
-function showScrollbarIfNecessary() {
-  optionList.value?.classList.toggle("show-scrollbar");
-}
-
 /* prevents the menu quickly closing and re-opening if the activator is clicked
   (because we'd be clicking outside the list box AND clicking the box straight after*/
-function openIfNotClosing() {
+function handleOpenIfNotClosing(e: Event) {
+  /*   if (e instanceof KeyboardEvent) {
+   if (["enter", "space"].includes(e.key) === false) {
+      console.log(e, open.value);
+      return;
+    }
+  } else if (e instanceof PointerEvent) {
+  } */
+
+  e.preventDefault();
   if (!open.value && state.value === "none") open.value = true;
 }
 
-function clear() {
+async function handleInputKeyUp(e: KeyboardEvent) {
+  const key = e.key;
+  const searchElement = getSearchElement();
+  console.log(key);
+
+  // it was probably alphanumeric? but we only care about improvising
+  // if the search isn't already under focus
+  if (key.length === 1 && document.activeElement !== searchElement) {
+    handleOpenIfNotClosing(e);
+    handleFocusInput(key);
+    return;
+  }
+
+  switch (key) {
+    case "ArrowDown":
+      handleOpenIfNotClosing(e);
+      focusListItem("down");
+      handleFocusInput();
+      break;
+    case "ArrowUp":
+      focusListItem("up");
+      handleFocusInput();
+      break;
+    case "ArrowLeft":
+      handleFocusInput();
+      break;
+    case "ArrowRight":
+      handleFocusInput();
+      break;
+    case "Enter":
+    // todo handle enter to select
+  }
+}
+
+function handleClick(e: PointerEvent) {
+  const searchElement = getSearchElement();
+
+  handleOpenIfNotClosing(e);
+
+  if (document.activeElement !== searchElement) {
+    handleFocusInput();
+    return;
+  }
+}
+
+async function handleFocusInput(appendCharacter = "") {
+  // focus and append the pressed character to maintain cognitive
+  // flow
+  const searchElement = getSearchElement();
+
+  if (!searchElement) return;
+
+  search.value += appendCharacter;
+  await nextTick();
+  searchElement.focus();
+}
+
+/**
+ * Determine what the next list item we should focus on is
+ */
+function focusListItem(direction: "up" | "down" = "down") {
+  let next: null | Element | undefined = null;
+
+  const active = menu.value?.querySelector(".active");
+  const firstInList = () => optionList.value?.firstElementChild;
+  const lastInList = () => optionList.value?.lastElementChild;
+
+  // depending on the direction, if there's no sibling in that direction, we'll just
+  // utilise wrap around behaviour
+  if (direction === "down") {
+    next = active?.nextElementSibling ?? firstInList();
+  } else {
+    next = active?.previousElementSibling ?? lastInList();
+  }
+
+  if (next instanceof HTMLElement) {
+    active?.classList.remove("active");
+    next.classList.add("active");
+  }
+}
+
+function handleClear() {
   emit("update:ids", []);
   emit("clear");
 }
-/**
- * HELPERS
- */
 
-/**
- * Generate a UUID
- */
+function handleUnfocus() {
+  open.value = false;
+  clearSearch();
+}
+
+/* HELPERS */
 function generateId() {
   return (Math.random() + 1).toString(36).substring(2);
 }
 
-/*
-  // move focus to first menu item
-  function focusFirstMenuItem() {
-    if (menu.value)
-      menu.value.querySelector<HTMLButtonElement>(':not([disabled])')?.focus();
-  } */
+function clearSearch() {
+  search.value = "";
+}
+
+/* GETS */
+function getSearchElement(): HTMLInputElement | null {
+  const searchElement = activator.value?.querySelector(".search");
+
+  return searchElement instanceof HTMLInputElement ? searchElement : null;
+}
 </script>
 
 <style>
@@ -580,36 +594,35 @@ function generateId() {
   flex-direction: column;
   overflow: hidden;
 
-  &.open {
-  }
-
-  &.closed {
-    /* display: none; */
-  }
-
   > .select-list {
     overflow: hidden;
   }
+
   & .select-list-option {
-    padding: 0.5rem;
+    padding: 0.25rem 0.5rem;
 
     &:focus-within {
       outline: 2px solid salmon;
     }
 
-    &:hover {
+    &.active {
       background: #6495ed;
     }
 
-    &.selected {
+    &[aria-selected="true"] {
       background: plum;
     }
   }
 }
 
-.select-container {
-  &.open .caret {
+.select-container.open {
+  & .caret {
     transform: rotate(180deg);
+  }
+
+  & .select-box-multiple-values {
+    transform: translateY(-150%);
+    top: 0px;
   }
 }
 
@@ -620,68 +633,29 @@ function generateId() {
 
 .select-box {
   display: flex;
-  align-items: center;
   border: 1px solid lightgray;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   outline-offset: -2px;
+  box-shadow: inset 0 0px 2px 0 rgb(0 0 0);
+  background: white;
+  color: black;
+  padding-right: 5rem;
+  padding: 0.3rem 0.5rem;
+  overflow: hidden;
 
   &:hover {
     border-color: lightblue;
   }
 
-  > .select-box-selections {
-    flex: 1;
-  }
-
-  > .caret {
-    transform: rotate(0deg);
-    transition: transform 0.5s;
-  }
-
-  & .select-clear {
-    padding: 0;
-    margin: 0;
-    background: inherit;
-  }
   & .select-box-button {
-    padding: 0 1rem;
     cursor: pointer;
-  }
-}
-
-.select-box-selections {
-  gap: 0.5rem;
-  overflow: hidden;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.select-box-selections,
-.caret,
-.select-clear {
-  padding: 0.5rem;
-}
-
-.select-search-container {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.5rem;
-  border: 1px solid lightgray;
-  border-width: 0 0 1px 0;
-  box-shadow: 0 0 3px 0px #000000;
-
-  & .search {
-    padding: 0.5rem;
-    flex: 1;
-    box-sizing: border-box;
-    height: 100%;
-    background: #fff;
-    box-shadow: inset 0 0 1px 0 #000000;
-    border-radius: 0.2rem;
-    border: 1px solid lightgray;
-    color: #000;
+    display: flex;
+    width: 2rem; /* 
+    position: absolute; */
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
   }
 }
 
@@ -723,6 +697,9 @@ function generateId() {
     padding: 0 0.2rem;
   }
 }
+.hover {
+  background-color: cadetblue;
+}
 .show-scrollbar {
   overflow: auto !important;
 }
@@ -735,5 +712,12 @@ function generateId() {
 .v-enter-from,
 .v-leave-to {
   max-height: 0 !important;
+}
+
+.icon {
+  margin: 0;
+  padding: 0;
+  display: block;
+  color: #000;
 }
 </style>

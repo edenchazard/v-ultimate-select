@@ -11,8 +11,8 @@
       </p>
     </section>
     <VueAngrySelect
-      :options="[...options, ...options2]"
       :="config"
+      :options="[...options, ...options2]"
       class="tags"
       v-model:ids="ids"
       v-model:values="values"
@@ -101,7 +101,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import VueAngrySelect from "./components/VueAngrySelect.vue";
+import VueAngrySelect from "./components/AngrySelect.vue";
 
 const options = ["John", "Lauren", "Michelle", "Mike"];
 
@@ -110,10 +110,10 @@ const options2 = ["Pig", "Goat", "Duck", "Cow", "Chicken", "Sheep", "Horse"];
 const config = reactive({
   closeOnSelect: true,
   showSearch: true,
-  multiple: false,
+  multiple: true,
   listbox: false,
   customMatcher: false,
-  placeholder: "Select an option...",
+  placeholder: undefined,
 });
 
 const values = ref([]);
