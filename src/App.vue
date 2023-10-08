@@ -10,15 +10,32 @@
         <strong class="bold">One select to rule them all.</strong>
       </p>
     </section>
-    <VueAngrySelect
+
+    <h2>Multiselect</h2>
+    <AngryMultiSelect
       :="config"
-      :options="[...options, ...options2]"
-      class="tags"
-      v-model:ids="ids"
-      v-model:values="values"
+      :options="[...options, ...options2, ...options3]"
+      v-model:ids="multiIds"
+      v-model:values="multiValues"
+      :close-on-select="config.closeOnSelect"
+      :search-handler="config.customMatcher ? customMatcher : null"
+    />
+    <div>Selected IDs: {{ multiIds }}</div>
+    <div>Selected values: {{ multiValues }}</div>
+
+    <h2>Single select</h2>
+    <AngrySingleSelect
+      :="config"
+      :options="[...options, ...options2, ...options3]"
+      :close-on-select="config.closeOnSelect"
+      v-model:id="singleId"
+      v-model:value="singleValue"
       :search-handler="config.customMatcher ? customMatcher : null"
       @selected="(key, value) => (selected = { key, value })"
     />
+    <div>Selected ID: {{ singleId }}</div>
+    <div>Selected value: {{ singleValue }}</div>
+
     <h2>Configuration</h2>
     <div id="config">
       <input
@@ -32,33 +49,12 @@
       </div>
       <input
         type="checkbox"
-        v-model="config.showSearch"
-        id="show-search"
+        v-model="config.autocomplete"
+        id="show-autocomplete"
       />
       <div>
-        <label for="show-search">Show search</label>
-        <p>Hide or show the search input.</p>
-      </div>
-      <input
-        type="checkbox"
-        v-model="config.multiple"
-        id="multiple"
-      />
-      <div>
-        <label for="multiple">Select multiple</label>
-        <p>Multiple items will be returned as IDs inside an array.</p>
-      </div>
-      <input
-        type="checkbox"
-        v-model="config.listbox"
-        id="multiple"
-      />
-      <div>
-        <label for="multiple">Listbox style</label>
-        <p>
-          It's a thing. The options will be displayed as a list instead of a
-          dropdown.
-        </p>
+        <label for="show-search">Autocomplete</label>
+        <p>The user can type in the placeholder to filter the list.</p>
       </div>
       <input
         type="checkbox"
@@ -84,41 +80,43 @@
         </p>
       </div>
     </div>
-
-    <div>Selected IDs: {{ ids }}</div>
-    <div>Selected values: {{ values }}</div>
-    <div>
-      Most recently selected option:
-      <dl>
-        <dt>ID</dt>
-        <dd>{{ selected.key }}</dd>
-        <dt>Value</dt>
-        <dd>{{ selected.value }}</dd>
-      </dl>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import VueAngrySelect from "./components/AngrySelect.vue";
+import type { OptionValue } from "./types";
+import AngryMultiSelect from "./components/AngryMultiSelect.vue";
+import AngrySingleSelect from "./components/AngrySingleSelect.vue";
 
 const options = ["John", "Lauren", "Michelle", "Mike"];
 
 const options2 = ["Pig", "Goat", "Duck", "Cow", "Chicken", "Sheep", "Horse"];
 
+const options3 = [
+  "Red",
+  "Blue",
+  "Green",
+  "Brown",
+  "Purple",
+  "Yellow",
+  "Seafoam",
+];
+
 const config = reactive({
   closeOnSelect: true,
-  showSearch: true,
-  multiple: true,
+  autocomplete: true,
   listbox: false,
   customMatcher: false,
   placeholder: undefined,
 });
 
-const values = ref([]);
-const ids = ref([]);
+const singleValue = ref(null);
+const singleId = ref(null);
 const selected = ref({ key: null, value: null });
+
+const multiValues = ref([]);
+const multiIds = ref([]);
 
 function customMatcher(search: string, option: OptionValue): boolean {
   return option.value.toString().startsWith(search);

@@ -1,4 +1,11 @@
-import { onMounted, onUnmounted, toRef, type Ref, type MaybeRef } from "vue";
+import {
+  onMounted,
+  onUnmounted,
+  toRef,
+  type Ref,
+  type MaybeRef,
+  nextTick,
+} from "vue";
 
 type MaybeHTMLElementRef = MaybeRef<HTMLElement | undefined>;
 type ElementOrElementArray = MaybeHTMLElementRef | MaybeHTMLElementRef[];
@@ -24,7 +31,7 @@ export default function useFocusOutside(
   _options: UseFocusOutsideOptions = {}
 ): UseFocusOutsideReturn {
   const listeners: Array<{
-    boundary: Array<Ref<HTMLElement>>;
+    boundary: Array<MaybeHTMLElementRef>;
     callback: UseFocusOutsideCallback;
   }> = [];
 
@@ -71,7 +78,7 @@ export default function useFocusOutside(
    * Listen for focusness.
    */
   function listen() {
-    document.body.addEventListener("pointerdown", pointerListener);
+    document.body.addEventListener("click", pointerListener);
     document.body.addEventListener("keydown", keyListener);
   }
 
@@ -79,11 +86,11 @@ export default function useFocusOutside(
    * Stop listening for focusness.
    */
   function unlisten() {
-    document.body.removeEventListener("pointerdown", pointerListener);
+    document.body.removeEventListener("click", pointerListener);
     document.body.removeEventListener("keydown", keyListener);
   }
 
-  const pointerListener = (e: PointerEvent) => {
+  const pointerListener = (e: Event) => {
     if (!e.target) return;
 
     ifOutOfBounds(e);
@@ -106,14 +113,14 @@ export default function useFocusOutside(
     }
   };
 
-  function ifOutOfBounds(e: Event) {
+  async function ifOutOfBounds(e: Event) {
+    await nextTick();
     requestAnimationFrame(() => {
       listeners.forEach((listener) => {
-        const testBoundaries = listener.boundary.map(
-          (boundary) => boundary.value?.contains(document.activeElement)
+        const testBoundaries = listener.boundary.filter(
+          (boundary) => boundary.value?.contains(e.target) === true
         );
-
-        if (testBoundaries.includes(true) === false) {
+        if (testBoundaries.length === 0) {
           listener.callback();
         }
       });

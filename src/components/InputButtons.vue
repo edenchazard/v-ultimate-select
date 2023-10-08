@@ -3,6 +3,7 @@
     <slot name="clear">
       <span
         title="Clear selection"
+        aria-hidden="true"
         role="button"
         type="button"
         class="select-box-button clear"

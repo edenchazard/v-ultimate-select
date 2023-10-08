@@ -1,0 +1,146 @@
+.select-list-container {
+  background: #fff;
+  z-index: 1000;
+  border: 1px solid lightgray;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  &.below {
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 2px 4px 0 #000000;
+  }
+
+  &.above {
+    border-radius: 0.5rem 0.5rem 0 0;
+    box-shadow: 0 -2px 4px 0 #000000;
+  }
+
+  > .select-list {
+    overflow: auto;
+  }
+
+  & .select-list-option {
+    padding: 0.25rem 0.5rem;
+
+    &:focus-within {
+      outline: 2px solid salmon;
+    }
+
+    &.active {
+      background: #6495ed;
+    }
+
+    &[aria-selected="true"] {
+      background: plum;
+    }
+  }
+}
+
+.select-container.open {
+  & .caret {
+    transform: rotate(180deg);
+  }
+
+  & .select-box-multiple-values {
+    transform: translateY(-150%);
+    top: 0px;
+  }
+}
+
+.open .select-box,
+.select-box:focus {
+  outline: 2px solid rgba(0, 62, 179, 0.342);
+}
+
+.select-box {
+  display: flex;
+  border: 1px solid lightgray;
+  border-radius: 0.25rem;
+  outline-offset: -2px;
+  box-shadow: inset 0 0px 2px 0 rgb(0 0 0);
+  background: white;
+  color: black;
+  padding-right: 5rem;
+  padding: 0.3rem 0.5rem;
+  overflow: hidden;
+  align-items: flex-start;
+
+  &:hover {
+    border-color: lightblue;
+  }
+
+  & .select-box-button {
+    cursor: pointer;
+    display: flex;
+    width: 2rem; /* 
+    position: absolute; */
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+  }
+}
+
+.listbox {
+  & .select-box {
+    /* border-radius: 0.5rem 0.5rem 0 0; */
+    display: none;
+  }
+
+  &.select-list-container {
+    border-radius: 0.5rem;
+  }
+}
+.tag {
+  white-space: nowrap;
+  font-size: 0.6em;
+  color: var(--secondary);
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  border-radius: 0.4rem;
+  overflow: hidden;
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  max-height: 100%;
+  cursor: inherit;
+
+  /* &.group-egg {
+      --primary: #991b1e;
+      --secondary: #fff;
+    }
+
+    &.group-tag { */
+  --primary: #451952;
+  --secondary: #fff;
+  /*   } */
+
+  > .value {
+    padding: 0 0.2rem;
+  }
+}
+.hover {
+  background-color: cadetblue;
+}
+.show-scrollbar {
+  overflow: auto !important;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 250ms ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+
+.icon {
+  margin: 0;
+  padding: 0;
+  display: block;
+  color: #000;
+}

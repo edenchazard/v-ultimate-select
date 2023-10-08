@@ -3,7 +3,6 @@
     class="select-box-multiple-container"
     :style="{
       minHeight: rowHeight + 'rem',
-      height: (rows * rowHeight).toString() + 'rem',
     }"
   >
     <template
@@ -22,12 +21,14 @@
     </template>
     <slot name="placeholder">
       <Search
+        v-if="autocomplete"
         class="search"
         :modelValue="search"
         :style="{ height: rowHeight + 'rem' }"
         :placeholder="computePlaceholder"
         @update:modelValue="$emit('update:search', $event)"
       />
+      <span v-else>{{ computePlaceholder }}</span>
     </slot>
   </div>
 </template>
@@ -43,10 +44,10 @@ interface Props {
   values: string[];
   rows?: number;
   rowHeight?: number;
+  autocomplete?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  values: [],
   rows: 2,
   rowHeight: 1.5,
 });
@@ -73,7 +74,6 @@ const computePlaceholder = computed<string>(() => {
   transform: translateY(0);
   transition: transform 0.5s ease-in-out; */
   flex-wrap: wrap;
-  overflow: hidden;
 }
 
 .search {

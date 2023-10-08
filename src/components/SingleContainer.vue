@@ -1,7 +1,7 @@
 <template>
   <div class="select-box-single">
     <Search
-      v-if="enableSearch"
+      v-if="autocomplete"
       class="search"
       :placeholder="placeholder"
       :modelValue="modelValue"
@@ -9,13 +9,13 @@
     />
     <slot
       name="value"
-      v-else-if="value"
+      v-else-if="modelValue"
     >
-      {{ value }}
+      {{ modelValue }}
     </slot>
     <slot
       name="placeholder"
-      v-else
+      v-else-if="modelValue.length === 0"
     >
       {{ placeholder }}
     </slot>
@@ -31,14 +31,12 @@ const emit = defineEmits<{
 
 interface Props {
   placeholder?: string;
-  modelValue?: string;
-  enableSearch?: boolean;
+  modelValue: string;
+  autocomplete?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: "Select an option",
-  enableSearch: true,
-  value: "",
 });
 </script>
 

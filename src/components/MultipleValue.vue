@@ -2,7 +2,11 @@
   <span class="select-box-multiple-value">
     <slot>
       <span class="select-box-multiple-value-label">{{ value }}</span>
-      <span class="select-box-multiple-value-remove">x</span>
+      <span
+        class="select-box-multiple-value-remove"
+        aria-hidden="true"
+        >x</span
+      >
     </slot>
   </span>
 </template>
