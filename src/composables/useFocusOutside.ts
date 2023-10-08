@@ -1,14 +1,7 @@
-import {
-  onMounted,
-  onUnmounted,
-  toRef,
-  type Ref,
-  type MaybeRef,
-  nextTick,
-} from "vue";
+import { onMounted, onUnmounted, toRef, nextTick, ref } from "vue";
+import type { MaybeRef, Ref } from "vue";
 
-type MaybeHTMLElementRef = MaybeRef<HTMLElement | undefined>;
-type ElementOrElementArray = MaybeHTMLElementRef | MaybeHTMLElementRef[];
+type HTMLElementRefArray = Ref<HTMLElement>[];
 type UseFocusOutsideCallback = () => void;
 type UseFocusOutsideUnlistener = () => void;
 
@@ -18,7 +11,7 @@ interface UseFocusOutsideReturn {
   unlisten: () => void;
 
   onFocusOutside: (
-    boundary: ElementOrElementArray,
+    boundary: MaybeRef<HTMLElement | HTMLElement[]>,
     callback: UseFocusOutsideCallback
   ) => UseFocusOutsideUnlistener;
 }
@@ -31,7 +24,7 @@ export default function useFocusOutside(
   _options: UseFocusOutsideOptions = {}
 ): UseFocusOutsideReturn {
   const listeners: Array<{
-    boundary: Array<MaybeHTMLElementRef>;
+    boundary: HTMLElementRefArray;
     callback: UseFocusOutsideCallback;
   }> = [];
 
@@ -57,13 +50,14 @@ export default function useFocusOutside(
    * @returns A callback to unsubscribe the listener.
    */
   function onFocusOutside(
-    boundary: ElementOrElementArray,
+    boundary: MaybeRef<HTMLElement | HTMLElement[]>,
     callback: UseFocusOutsideCallback
   ): UseFocusOutsideUnlistener {
     const sub = listeners.push({
-      boundary: Array.isArray(boundary)
-        ? boundary.map((el) => toRef(el))
-        : [toRef(boundary)],
+      boundary:
+        boundary instanceof HTMLElement
+          ? [toRef(boundary)]
+          : (boundary as HTMLElement[]).map((el) => toRef(el)),
       callback,
     });
 
@@ -78,53 +72,42 @@ export default function useFocusOutside(
    * Listen for focusness.
    */
   function listen() {
-    document.body.addEventListener("click", pointerListener);
-    document.body.addEventListener("keydown", keyListener);
+    document.body.addEventListener("focusin", checkOutOfBounds);
+    document.body.addEventListener("click", checkOutOfBounds);
   }
 
   /**
    * Stop listening for focusness.
    */
   function unlisten() {
-    document.body.removeEventListener("click", pointerListener);
-    document.body.removeEventListener("keydown", keyListener);
+    document.body.removeEventListener("focusout", checkOutOfBounds);
+    document.body.removeEventListener("click", checkOutOfBounds);
   }
 
-  const pointerListener = (e: Event) => {
-    if (!e.target) return;
+  function checkOutOfBounds(e: Event) {
+    const triggerListener = (listener: (typeof listeners)[0]) =>
+      listener.callback();
 
-    ifOutOfBounds(e);
-    // if both of these ae false, then we've performed an "out of bounds"
-    // and should close the drop down
-  };
+    (async function () {
+      await nextTick();
 
-  const keyListener = (e: KeyboardEvent) => {
-    switch (e.key) {
-      case "Tab":
-        ifOutOfBounds(e);
-        break;
-      /*  case "ArrowUp":
-        e.preventDefault();
-        //ifOutOfBounds(e, () => (open.value = false));
-        break; */
-    }
-    if (e.key === "Tab") {
-      console.log("test");
-    }
-  };
+      requestAnimationFrame(() => {
+        listeners.forEach((listener) => {
+          if (e.target instanceof HTMLElement === false) {
+            triggerListener(listener);
+            return;
+          }
 
-  async function ifOutOfBounds(e: Event) {
-    await nextTick();
-    requestAnimationFrame(() => {
-      listeners.forEach((listener) => {
-        const testBoundaries = listener.boundary.filter(
-          (boundary) => boundary.value?.contains(e.target) === true
-        );
-        if (testBoundaries.length === 0) {
-          listener.callback();
-        }
+          const testBoundariesEscaped = listener.boundary.filter(
+            (boundary) => boundary.value?.contains(e.target as Node) === true
+          );
+
+          if (testBoundariesEscaped.length === 0) {
+            triggerListener(listener);
+          }
+        });
       });
-    });
+    })();
   }
 
   return {

@@ -9,6 +9,10 @@ import type {
 } from "../types";
 import useFocusOutside from "./useFocusOutside";
 
+type ListItemSelectHandlerCallback = <T extends Event>(
+  e: T,
+  option: { id: OptionKey; value: OptionValue }
+) => void;
 /**
  * Functionality common to all angry selects
  */
@@ -17,6 +21,7 @@ export default function useAngryHandlers(
   activator: Ref<HTMLElement | undefined>,
   menu: Ref<HTMLElement | undefined>,
   optionList: Ref<HTMLElement | undefined>,
+  activeDescendant: Ref<HTMLLIElement>,
 
   search: Ref<string>,
   open: Ref<boolean>,
@@ -24,6 +29,8 @@ export default function useAngryHandlers(
 
   props: Required<AngrySelectProps>
 ) {
+  let listItemSelectHandler: ListItemSelectHandlerCallback | null = null;
+
   const { onFocusOutside, listen, unlisten } = useFocusOutside({
     listenOnMount: false,
   });
@@ -89,6 +96,26 @@ export default function useAngryHandlers(
     },
   ]);
 
+  function setListItemSelectAction(callback: ListItemSelectHandlerCallback) {
+    listItemSelectHandler = (e) => {
+      console.log(e);
+
+      if (!(e.target instanceof HTMLLIElement)) return;
+
+      const key = e.target.dataset.key;
+
+      if (typeof key === "undefined") return;
+
+      const _option = internalOptions.value.get(
+        isNaN(parseInt(key)) ? key : parseInt(key)
+      );
+
+      if (!_option) return;
+
+      callback(e, _option);
+    };
+  }
+
   async function handleFocusInput(appendCharacter = "") {
     // focus and append the pressed character to maintain cognitive
     // flow
@@ -101,15 +128,16 @@ export default function useAngryHandlers(
     searchElement.focus();
   }
 
-  function handleClick(e: PointerEvent) {
+  async function handleClick(e: PointerEvent) {
     const searchElement = getSearchElement();
-
-    handleOpenIfNotClosing(e);
-
-    if (document.activeElement !== searchElement) {
-      handleFocusInput();
-      return;
+    if (e.target === searchElement) {
     }
+    handleOpenIfNotClosing(e);
+    // await nextTick();
+    // if (document.activeElement !== searchElement) {
+    //handleFocusInput();
+    return;
+    //}
   }
 
   /* prevents the menu quickly closing and re-opening if the activator is clicked
@@ -122,7 +150,7 @@ export default function useAngryHandlers(
     }
   } else if (e instanceof PointerEvent) {
   } */
-
+    console.log(open.value, state.value);
     if (!open.value && state.value === "none") open.value = true;
   }
 
@@ -231,9 +259,13 @@ export default function useAngryHandlers(
         handleFocusInput();
         break;
       case "Enter":
-      // todo handle enter to select
+        e.preventDefault();
+        listItemSelectHandler(e);
+        break;
     }
   }
+
+  function selectListItem(item) {}
 
   /**
    * Determine what the next list item we should focus on is
@@ -297,5 +329,6 @@ export default function useAngryHandlers(
     handleOpenIfNotClosing,
     showScrollbarIfNecessary,
     handleFocusInput,
+    setListItemSelectAction,
   };
 }

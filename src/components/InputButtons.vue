@@ -7,7 +7,7 @@
         role="button"
         type="button"
         class="select-box-button clear"
-        @click.stop="$emit('clear', $event)"
+        @click.stop="emit('clear', $event)"
       >
         <FontAwesomeIcon
           class="icon"
@@ -17,12 +17,12 @@
     </slot>
 
     <slot name="caret">
-      <FontAwesomeIcon
-        class="icon select-box-button caret"
-        icon="caret-down"
-        @click="$emit('open', $event)"
-        @keyup="$emit('open', $event)"
-      />
+      <span class="select-box-button caret">
+        <FontAwesomeIcon
+          class="icon"
+          icon="caret-down"
+        />
+      </span>
     </slot>
   </div>
 </template>
@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 //defineProps<{}>();
-defineEmits<{
+const emit = defineEmits<{
   (event: "clear", e: Event): void;
   (event: "open", e: Event): void;
 }>();
@@ -39,10 +39,14 @@ defineEmits<{
 <style>
 .select-box-inputs {
   display: flex;
-  align-items: center;
 }
 .select-box-button {
-  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
 }
 .caret {
   transition: transform 0.5s;
@@ -51,7 +55,7 @@ defineEmits<{
   transform: rotate(0deg);
 }
 .clear {
-  right: 2rem;
-  height: 1rem;
+}
+.icon {
 }
 </style>

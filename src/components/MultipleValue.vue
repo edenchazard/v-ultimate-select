@@ -15,6 +15,10 @@
 defineProps<{
   value: string;
 }>();
+
+const emit = defineEmits<{
+  (event: "remove", value: string): void;
+}>();
 </script>
 
 <style>

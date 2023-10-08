@@ -91,7 +91,7 @@
 
 <script setup lang="ts">
 import "reset-css";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import "../assets/style.css";
 import type {
   AngryMultiSelectEvents,
@@ -114,6 +114,7 @@ const activator = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 const container = ref<HTMLDivElement>();
 const optionList = ref<HTMLUListElement>();
+const activeDescendant = ref<HTMLLinkElement>();
 
 const search = ref<string>("");
 const open = ref<boolean>(false);
@@ -136,11 +137,13 @@ const {
   handleOpenIfNotClosing,
   showScrollbarIfNecessary,
   handleFocusInput,
+  setListItemSelectAction,
 } = useAngryHandlers(
   container,
   activator,
   menu,
   optionList,
+  activeDescendant,
   search,
   open,
   state,
@@ -154,20 +157,7 @@ const selected = computed(() => {
   return (props.ids as OptionKey[]).map(get);
 });
 
-function handleOptionSelected<T extends Event>(e: T) {
-  console.log(e);
-  if (!(e.target instanceof HTMLElement)) return;
-
-  const key = e.target.dataset.key;
-
-  if (typeof key === "undefined") return;
-
-  const option = internalOptions.value.get(
-    isNaN(parseInt(key)) ? key : parseInt(key)
-  );
-
-  if (!option) return;
-
+setListItemSelectAction((e, option) => {
   const previous = [...new Set(props.ids)];
   const exists = previous.indexOf(key);
 
@@ -188,7 +178,7 @@ function handleOptionSelected<T extends Event>(e: T) {
 
   emit("update:ids", previous);
   emit("selected", key, option);
-}
+});
 
 function handleClear() {
   emit("update:ids", []);

@@ -70,17 +70,6 @@
   &:hover {
     border-color: lightblue;
   }
-
-  & .select-box-button {
-    cursor: pointer;
-    display: flex;
-    width: 2rem; /* 
-    position: absolute; */
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-  }
 }
 
 .listbox {

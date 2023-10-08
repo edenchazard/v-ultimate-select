@@ -110,11 +110,11 @@ const activator = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 const container = ref<HTMLDivElement>();
 const optionList = ref<HTMLUListElement>();
+const activeDescendant = ref<HTMLLinkElement>();
 
 const search = ref<string>("");
 const open = ref<boolean>(false);
 const state = ref<"closing" | "opening" | "none">("none");
-const text = ref<string>("");
 const nodeId = computed(() => props.htmlId ?? generateId());
 
 const {
@@ -133,11 +133,13 @@ const {
   handleOpenIfNotClosing,
   showScrollbarIfNecessary,
   handleFocusInput,
+  setListItemSelectAction,
 } = useAngryHandlers(
   container,
   activator,
   menu,
   optionList,
+  activeDescendant,
   search,
   open,
   state,
