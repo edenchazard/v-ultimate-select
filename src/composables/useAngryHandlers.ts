@@ -1,4 +1,4 @@
-import { computed, nextTick, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, watch } from "vue";
 import type { StyleValue, Ref } from "vue";
 import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
 import type {
@@ -10,9 +10,12 @@ import type {
 import useFocusOutside from "./useFocusOutside";
 
 type ListItemSelectHandlerCallback = <T extends Event>(
-  e: T,
-  option: { id: OptionKey; value: OptionValue }
+  option: { id: OptionKey; value: OptionValue },
+  e: T
 ) => void;
+
+type ListOptionElement = HTMLLIElement & { dataset: { key: string } };
+
 /**
  * Functionality common to all angry selects
  */
@@ -21,7 +24,7 @@ export default function useAngryHandlers(
   activator: Ref<HTMLElement | undefined>,
   menu: Ref<HTMLElement | undefined>,
   optionList: Ref<HTMLElement | undefined>,
-  activeDescendant: Ref<HTMLLIElement>,
+  activeDescendant: Ref<HTMLLIElement | undefined>,
 
   search: Ref<string>,
   open: Ref<boolean>,
@@ -29,7 +32,8 @@ export default function useAngryHandlers(
 
   props: Required<AngrySelectProps>
 ) {
-  let listItemSelectHandler: ListItemSelectHandlerCallback | null = null;
+  let listItemSelectHandler: ListItemSelectHandlerCallback = () => {};
+  let windowScrollHideListener = () => (open.value = false);
 
   const { onFocusOutside, listen, unlisten } = useFocusOutside({
     listenOnMount: false,
@@ -69,7 +73,7 @@ export default function useAngryHandlers(
     ],
   });
 
-  onFocusOutside([menu, container], handleUnfocus);
+  onFocusOutside([menu, container], handleBlur);
 
   // don't really need to do this but it's nice to remove the listener I guess.
   watch(open, (cur) => {
@@ -97,22 +101,14 @@ export default function useAngryHandlers(
   ]);
 
   function setListItemSelectAction(callback: ListItemSelectHandlerCallback) {
-    listItemSelectHandler = (e) => {
-      console.log(e);
+    // we want Extra Info, so we actually just make a wrapper around the
+    // callback.
+    listItemSelectHandler = (option, e) => {
+      callback(option, e);
 
-      if (!(e.target instanceof HTMLLIElement)) return;
-
-      const key = e.target.dataset.key;
-
-      if (typeof key === "undefined") return;
-
-      const _option = internalOptions.value.get(
-        isNaN(parseInt(key)) ? key : parseInt(key)
-      );
-
-      if (!_option) return;
-
-      callback(e, _option);
+      if (props.closeOnSelect) {
+        handleBlur();
+      }
     };
   }
 
@@ -123,21 +119,23 @@ export default function useAngryHandlers(
 
     if (!searchElement) return;
 
-    search.value += appendCharacter;
     await nextTick();
+    search.value += appendCharacter;
     searchElement.focus();
   }
 
   async function handleClick(e: PointerEvent) {
     const searchElement = getSearchElement();
+
     if (e.target === searchElement) {
     }
+
     handleOpenIfNotClosing(e);
-    // await nextTick();
-    // if (document.activeElement !== searchElement) {
-    //handleFocusInput();
-    return;
-    //}
+    await nextTick();
+    if (document.activeElement !== searchElement) {
+      handleFocusInput();
+      return;
+    }
   }
 
   /* prevents the menu quickly closing and re-opening if the activator is clicked
@@ -150,7 +148,6 @@ export default function useAngryHandlers(
     }
   } else if (e instanceof PointerEvent) {
   } */
-    console.log(open.value, state.value);
     if (!open.value && state.value === "none") open.value = true;
   }
 
@@ -228,10 +225,20 @@ export default function useAngryHandlers(
     return options;
   });
 
-  async function handleInputKeyUp(e: KeyboardEvent) {
+  const activeDescendantId = computed<string | null>(() => {
+    if (activeDescendant.value) {
+      return activeDescendant.value?.id;
+    } else return null;
+  });
+
+  onMounted(() => window.addEventListener("scroll", windowScrollHideListener));
+  onUnmounted(() =>
+    window.removeEventListener("scroll", windowScrollHideListener)
+  );
+
+  function handleInputKeyUp(e: KeyboardEvent) {
     const key = e.key;
     const searchElement = getSearchElement();
-    console.log(key);
 
     // it was probably alphanumeric? but we only care about improvising
     // if the search isn't already under focus
@@ -244,91 +251,143 @@ export default function useAngryHandlers(
 
     switch (key) {
       case "ArrowDown":
+        e.preventDefault();
         handleOpenIfNotClosing(e);
-        focusListItem("down");
+        handleFocusNextListItem("down");
         handleFocusInput();
         break;
+
       case "ArrowUp":
-        focusListItem("up");
+        e.preventDefault();
+        handleFocusNextListItem("up");
         handleFocusInput();
         break;
+
       case "ArrowLeft":
         handleFocusInput();
         break;
+
       case "ArrowRight":
         handleFocusInput();
         break;
+
       case "Enter":
         e.preventDefault();
-        listItemSelectHandler(e);
+        handleSelectListItem(e);
         break;
     }
   }
 
-  function selectListItem(item) {}
+  function handleSelectListItem<T extends Event>(e: T) {
+    const active = getCurrentlyHighlightedListItem();
+
+    if (!active) return;
+
+    listItemSelectHandler(
+      {
+        id: active.dataset.key,
+        value: getItem(active.dataset.key),
+      },
+      e
+    );
+  }
 
   /**
    * Determine what the next list item we should focus on is
    */
-  function focusListItem(direction: "up" | "down" = "down") {
+  function handleFocusNextListItem(direction: "up" | "down" = "down") {
     let next: null | Element | undefined = null;
 
-    const active = menu.value?.querySelector(".active");
     const firstInList = () => optionList.value?.firstElementChild;
     const lastInList = () => optionList.value?.lastElementChild;
 
     // depending on the direction, if there's no sibling in that direction, we'll just
     // utilise wrap around behaviour
     if (direction === "down") {
-      next = active?.nextElementSibling ?? firstInList();
+      next =
+        getCurrentlyHighlightedListItem()?.nextElementSibling ?? firstInList();
     } else {
-      next = active?.previousElementSibling ?? lastInList();
+      next =
+        getCurrentlyHighlightedListItem()?.previousElementSibling ??
+        lastInList();
     }
 
-    if (next instanceof HTMLElement) {
-      active?.classList.remove("active");
-      next.classList.add("active");
-      next.scrollIntoView({ block: "center" });
+    if (next instanceof HTMLLIElement) {
+      setCurrentlyHighlightedListItem(next, true);
     }
   }
 
-  function handleUnfocus() {
+  function handleBlur() {
     open.value = false;
-    clearSearch();
+    handleClearSearch();
+    activeDescendant.value = undefined;
   }
 
-  /* HELPERS */
-  function generateId() {
-    return (Math.random() + 1).toString(36).substring(2);
-  }
-
-  function clearSearch() {
+  function handleClearSearch() {
     search.value = "";
   }
 
-  /* GETS */
   function getSearchElement(): HTMLInputElement | null {
     const searchElement = activator.value?.querySelector(".search");
 
     return searchElement instanceof HTMLInputElement ? searchElement : null;
   }
 
+  function getItem(key: OptionKey) {
+    return internalOptions.value.get(parseInt(key as string))?.[
+      props.trackByKey
+    ];
+  }
+
+  function setCurrentlyHighlightedListItem(
+    el: HTMLLIElement,
+    scrollIntoView = false
+  ) {
+    const active = getCurrentlyHighlightedListItem();
+    active?.classList.remove("active");
+
+    el.classList.add("active");
+    activeDescendant.value = el;
+
+    if (scrollIntoView) el.scrollIntoView({ block: "nearest" });
+  }
+
+  function getCurrentlyHighlightedListItem(): ListOptionElement | null {
+    const item = menu.value?.querySelector(".active");
+    return item === undefined ? null : (item as ListOptionElement);
+  }
+
+  // shouldn't be in here, but for now.
+  function generateId() {
+    return (Math.random() + 1).toString(36).substring(2);
+  }
+
   return {
+    /** refs */
     filteredOptionsList,
     internalOptions,
     floatingStyles,
     placement,
     classes,
+    activeDescendantId,
 
-    clearSearch,
-    generateId,
+    /** mainly utility functions */
+    getItem,
+    getSearchElement,
+    getCurrentlyHighlightedListItem,
+    setCurrentlyHighlightedListItem,
+    showScrollbarIfNecessary,
+    setListItemSelectAction,
+    handleFocusNextListItem,
+    generateId, // <-- move this out of the comnposable at some point
+
+    /** handlers */
+    handleClearSearch,
     handleClick,
-    handleUnfocus,
-    focusListItem,
+    handleBlur,
     handleInputKeyUp,
     handleOpenIfNotClosing,
-    showScrollbarIfNecessary,
     handleFocusInput,
-    setListItemSelectAction,
+    handleSelectListItem,
   };
 }

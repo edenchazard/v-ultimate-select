@@ -108,6 +108,37 @@ interface AngrySelectProps {
   menuLocation?: MenuLocation;
 }
 
+interface AngrySingleSelectProps extends AngrySelectProps {
+  /**
+   * TODO
+   *
+   * wanna make this a v-model of all the selected values
+   */
+  value: OptionValue | null;
+
+  /**
+   * The id of the selected option's value.
+   *
+   * If `multiple` is true, this will be an array of the option IDs.
+   */
+  id: OptionKey | null;
+}
+
+interface AngryMultiSelectProps extends AngrySelectProps {
+  /**
+   * TODO
+   *
+   * wanna make this a v-model of all the selected values
+   */
+  values: OptionValue[];
+  /**
+   * The id of the selected option's value.
+   *
+   * If `multiple` is true, this will be an array of the option IDs.
+   */
+  ids: OptionKey[];
+}
+
 interface AngrySelectEvents {
   /**
    * Emitted whenever the combobox is opened.
@@ -153,37 +184,6 @@ interface AngryMultiSelectEvents extends AngrySelectEvents {
    * Emitted whenever the combobox's value has been changed.
    */
   (event: "update:ids", value: SelectValue): void;
-}
-
-interface AngrySingleSelectProps extends AngrySelectProps {
-  /**
-   * TODO
-   *
-   * wanna make this a v-model of all the selected values
-   */
-  value: OptionValue | null;
-
-  /**
-   * The id of the selected option's value.
-   *
-   * If `multiple` is true, this will be an array of the option IDs.
-   */
-  id: string | null;
-}
-
-interface AngryMultiSelectProps extends AngrySelectProps {
-  /**
-   * TODO
-   *
-   * wanna make this a v-model of all the selected values
-   */
-  values: OptionValue[];
-  /**
-   * The id of the selected option's value.
-   *
-   * If `multiple` is true, this will be an array of the option IDs.
-   */
-  ids: string[];
 }
 
 export type {

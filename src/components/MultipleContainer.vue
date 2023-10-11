@@ -77,16 +77,14 @@ const computePlaceholder = computed<string>(() => {
 }
 
 .search {
-  box-shadow: inset 0 0 2px 0 #000000;
-  border-radius: 0.2rem;
-  border: 1px solid lightgray;
   padding: 0.5rem;
   display: flex;
   box-sizing: border-box;
+  flex: 1;
 }
 .search:focus {
   outline: none;
-  box-shadow: inset 0 0 1px 1px blue;
+  box-shadow: inset 0 0 1px 2px blue;
 }
 /*.select-box-multiple-value {
     border-radius: 0.25rem;

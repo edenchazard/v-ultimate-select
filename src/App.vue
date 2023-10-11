@@ -16,7 +16,6 @@
       :="config"
       :options="[...options, ...options2, ...options3]"
       v-model:ids="multiIds"
-      v-model:values="multiValues"
       :close-on-select="config.closeOnSelect"
       :search-handler="config.customMatcher ? customMatcher : null"
     />
@@ -101,6 +100,11 @@ const options3 = [
   "Purple",
   "Yellow",
   "Seafoam",
+  "Black",
+  "White",
+  "Aquamarine",
+  "Goldenrod",
+  "Mud",
 ];
 
 const config = reactive({

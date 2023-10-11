@@ -29,7 +29,7 @@
     }
 
     &.active {
-      background: #6495ed;
+      background: #6495ed !important;
     }
 
     &[aria-selected="true"] {

@@ -13,9 +13,7 @@
       aria-multiselectable="true"
       :aria-placeholder="placeholder"
       :aria-controls="`${nodeId}-select-list-container`"
-      :aria-activedescendant="
-        null //todo
-      "
+      :aria-activedescendant="activeDescendantId"
       aria-autocomplete="list"
       @keydown="handleInputKeyUp"
       @pointerdown="handleClick"
@@ -67,7 +65,8 @@
               class="select-list-option"
               :aria-selected="ids.includes(id.toString())"
               :data-key="id"
-              @click="handleOptionSelected"
+              @pointerenter="setCurrentlyHighlightedListItem($event.target)"
+              @click="handleSelectListItem"
             >
               <slot
                 name="option"
@@ -81,8 +80,8 @@
             name="noResults"
             v-else
           >
-            <p>No results.</p></slot
-          >
+            <p>No results.</p>
+          </slot>
         </div>
       </Transition>
     </Teleport>
@@ -103,18 +102,18 @@ import InputButtons from "./InputButtons.vue";
 import useAngryHandlers from "../composables/useAngryHandlers";
 import AngrySelectDefaults from "../AngrySelectDefaults";
 
+const emit = defineEmits<AngryMultiSelectEvents>();
+
 const props = withDefaults(
   defineProps<AngryMultiSelectProps>(),
   AngrySelectDefaults
 );
 
-const emit = defineEmits<AngryMultiSelectEvents>();
-
 const activator = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 const container = ref<HTMLDivElement>();
 const optionList = ref<HTMLUListElement>();
-const activeDescendant = ref<HTMLLinkElement>();
+const activeDescendant = ref<HTMLLIElement>();
 
 const search = ref<string>("");
 const open = ref<boolean>(false);
@@ -122,22 +121,32 @@ const state = ref<"closing" | "opening" | "none">("none");
 const nodeId = computed(() => props.htmlId ?? generateId());
 
 const {
+  /** refs */
   filteredOptionsList,
   internalOptions,
   floatingStyles,
   placement,
   classes,
+  activeDescendantId,
 
-  clearSearch,
+  /** mainly utility functions */
+  getItem,
+  getSearchElement,
+  getCurrentlyHighlightedListItem,
+  setCurrentlyHighlightedListItem,
+  showScrollbarIfNecessary,
+  setListItemSelectAction,
+  handleFocusNextListItem,
   generateId,
+
+  /** handlers */
+  handleClearSearch,
   handleClick,
-  handleUnfocus,
-  focusListItem,
+  handleBlur,
   handleInputKeyUp,
   handleOpenIfNotClosing,
-  showScrollbarIfNecessary,
   handleFocusInput,
-  setListItemSelectAction,
+  handleSelectListItem,
 } = useAngryHandlers(
   container,
   activator,
@@ -157,9 +166,9 @@ const selected = computed(() => {
   return (props.ids as OptionKey[]).map(get);
 });
 
-setListItemSelectAction((e, option) => {
-  const previous = [...new Set(props.ids)];
-  const exists = previous.indexOf(key);
+setListItemSelectAction((option, e) => {
+  const previous = [...props.ids];
+  const exists = previous.indexOf(option.id);
 
   // remove it
   if (exists > -1) {
@@ -167,17 +176,13 @@ setListItemSelectAction((e, option) => {
   }
   // add it
   else {
-    previous.push(key);
+    previous.push(option.id);
   }
 
-  if (props.closeOnSelect) {
-    handleUnfocus();
-  }
-
-  clearSearch();
+  handleClearSearch();
 
   emit("update:ids", previous);
-  emit("selected", key, option);
+  emit("selected", option.id, option.value);
 });
 
 function handleClear() {
@@ -185,5 +190,3 @@ function handleClear() {
   emit("clear");
 }
 </script>
-
-<style></style>
