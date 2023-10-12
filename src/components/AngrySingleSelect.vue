@@ -12,16 +12,14 @@
       :aria-expanded="open"
       :aria-placeholder="placeholder"
       :aria-controls="`${nodeId}-select-list-container`"
-      :aria-activedescendant="
-        null //todo
-      "
+      :aria-activedescendant="activeDescendantId"
       aria-autocomplete="list"
       @keydown="handleInputKeyUp"
       @pointerdown="handleClick"
     >
       <SingleContainer
         :="{ autocomplete, placeholder, id: nodeId }"
-        v-model="text"
+        :model-value="value"
       />
       <InputButtons
         @open="handleOpenIfNotClosing"
@@ -63,7 +61,10 @@
               class="select-list-option"
               :aria-selected="id.toString() === id"
               :data-key="id"
-              @click="handleOptionSelected"
+              @pointerenter="
+                setCurrentlyHighlightedListItem($event.target as HTMLLIElement)
+              "
+              @click="handleSelectListItem"
             >
               <slot
                 name="option"
@@ -92,6 +93,7 @@ import "../assets/style.css";
 import type {
   AngrySingleSelectEvents,
   OptionKey,
+  MenuState,
   AngrySingleSelectProps,
 } from "../types";
 import SingleContainer from "./SingleContainer.vue";
@@ -110,30 +112,40 @@ const activator = ref<HTMLDivElement>();
 const menu = ref<HTMLDivElement>();
 const container = ref<HTMLDivElement>();
 const optionList = ref<HTMLUListElement>();
-const activeDescendant = ref<HTMLLinkElement>();
+const activeDescendant = ref<HTMLLIElement>();
 
 const search = ref<string>("");
 const open = ref<boolean>(false);
-const state = ref<"closing" | "opening" | "none">("none");
+const state = ref<MenuState>("none");
 const nodeId = computed(() => props.htmlId ?? generateId());
 
 const {
+  /** refs */
   filteredOptionsList,
   internalOptions,
   floatingStyles,
   placement,
   classes,
+  activeDescendantId,
 
-  clearSearch,
+  /** mainly utility functions */
+  getItem,
+  getSearchElement,
+  getCurrentlyHighlightedListItem,
+  setCurrentlyHighlightedListItem,
+  showScrollbarIfNecessary,
+  setListItemSelectAction,
+  handleFocusNextListItem,
   generateId,
+
+  /** handlers */
+  handleClearSearch,
   handleClick,
-  handleUnfocus,
-  focusListItem,
+  handleBlur,
   handleInputKeyUp,
   handleOpenIfNotClosing,
-  showScrollbarIfNecessary,
   handleFocusInput,
-  setListItemSelectAction,
+  handleSelectListItem,
 } = useAngryHandlers(
   container,
   activator,
@@ -147,39 +159,20 @@ const {
 );
 
 const selected = computed(() => {
-  const get = (key: OptionKey) =>
-    internalOptions.value.get(parseInt(key))?.[props.trackByKey];
-
-  return get(props.id as OptionKey);
+  return internalOptions.value.get(parseInt(props.id))?.[props.trackByKey];
 });
-
-function handleOptionSelected<T extends Event>(e: T) {
-  if (!(e.target instanceof HTMLElement)) return;
-
-  const key = e.target.dataset.key;
-
-  if (typeof key === "undefined") return;
-
-  const option = internalOptions.value.get(
-    isNaN(parseInt(key)) ? key : parseInt(key)
-  );
-
-  if (!option) return;
-
-  if (props.closeOnSelect) {
-    open.value = false;
-  }
-
-  text.value = option.value;
-
-  emit("update:id", option.value);
-  emit("selected", key, option);
-}
 
 function handleClear() {
   emit("update:id", null);
   emit("clear");
 }
+
+setListItemSelectAction((option, e) => {
+  //handleClearSearch();
+
+  emit("update:id", option.value);
+  emit("selected", option.id, option.value);
+});
 </script>
 
 <style></style>

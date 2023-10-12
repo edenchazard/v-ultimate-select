@@ -17,16 +17,8 @@
     box-shadow: 0 -2px 4px 0 #000000;
   }
 
-  > .select-list {
-    overflow: auto;
-  }
-
   & .select-list-option {
     padding: 0.25rem 0.5rem;
-
-    &:focus-within {
-      outline: 2px solid salmon;
-    }
 
     &.active {
       background: #6495ed !important;
@@ -36,22 +28,6 @@
       background: plum;
     }
   }
-}
-
-.select-container.open {
-  & .caret {
-    transform: rotate(180deg);
-  }
-
-  & .select-box-multiple-values {
-    transform: translateY(-150%);
-    top: 0px;
-  }
-}
-
-.open .select-box,
-.select-box:focus {
-  outline: 2px solid rgba(0, 62, 179, 0.342);
 }
 
 .select-box {
@@ -65,56 +41,15 @@
   padding-right: 5rem;
   padding: 0.3rem 0.5rem;
   overflow: hidden;
-  align-items: flex-start;
 
   &:hover {
     border-color: lightblue;
   }
 }
 
-.listbox {
-  & .select-box {
-    /* border-radius: 0.5rem 0.5rem 0 0; */
-    display: none;
-  }
-
-  &.select-list-container {
-    border-radius: 0.5rem;
-  }
-}
-.tag {
-  white-space: nowrap;
-  font-size: 0.6em;
-  color: var(--secondary);
-  border: 1px solid var(--primary);
-  background: var(--primary);
-  border-radius: 0.4rem;
-  overflow: hidden;
-  display: flex;
-  box-sizing: border-box;
-  align-items: center;
-  max-height: 100%;
-  cursor: inherit;
-
-  /* &.group-egg {
-      --primary: #991b1e;
-      --secondary: #fff;
-    }
-
-    &.group-tag { */
-  --primary: #451952;
-  --secondary: #fff;
-  /*   } */
-
-  > .value {
-    padding: 0 0.2rem;
-  }
-}
-.hover {
-  background-color: cadetblue;
-}
-.show-scrollbar {
-  overflow: auto !important;
+.open .select-box,
+.select-box:focus {
+  outline: 5px solid rgba(68, 143, 255, 0.8);
 }
 
 .v-enter-active,
@@ -125,11 +60,4 @@
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-}
-
-.icon {
-  margin: 0;
-  padding: 0;
-  display: block;
-  color: #000;
 }

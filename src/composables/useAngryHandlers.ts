@@ -1,6 +1,6 @@
-import { computed, nextTick, onMounted, onUnmounted, watch } from "vue";
 import type { StyleValue, Ref } from "vue";
-import { useFloating, autoUpdate, flip, size } from "@floating-ui/vue";
+import { computed, nextTick, onMounted, onUnmounted, watch } from "vue";
+import { useFloating, autoUpdate, flip, size, offset } from "@floating-ui/vue";
 import type {
   OptionKey,
   OptionValue,
@@ -8,6 +8,11 @@ import type {
   AngrySelectProps,
 } from "../types";
 import useFocusOutside from "./useFocusOutside";
+
+type MaybeElement<T extends HTMLElement = HTMLElement> = T | undefined;
+type MaybeElementRef<T extends MaybeElement = MaybeElement> = Ref<
+  T | undefined
+>;
 
 type ListItemSelectHandlerCallback = <T extends Event>(
   option: { id: OptionKey; value: OptionValue },
@@ -20,11 +25,11 @@ type ListOptionElement = HTMLLIElement & { dataset: { key: string } };
  * Functionality common to all angry selects
  */
 export default function useAngryHandlers(
-  container: Ref<HTMLElement | undefined>,
-  activator: Ref<HTMLElement | undefined>,
-  menu: Ref<HTMLElement | undefined>,
-  optionList: Ref<HTMLElement | undefined>,
-  activeDescendant: Ref<HTMLLIElement | undefined>,
+  container: MaybeElementRef,
+  activator: MaybeElementRef,
+  menu: MaybeElementRef,
+  optionList: MaybeElementRef<HTMLUListElement>,
+  activeDescendant: MaybeElementRef<HTMLLIElement>,
 
   search: Ref<string>,
   open: Ref<boolean>,
@@ -45,8 +50,9 @@ export default function useAngryHandlers(
     whileElementsMounted: autoUpdate,
     placement: "bottom-start",
     middleware: [
+      offset(5),
       size({
-        apply({ availableWidth, availableHeight, elements, rects }) {
+        apply({ availableWidth, availableHeight, elements, rects, placement }) {
           /*  console.log(
             availableHeight,
             availableWidth,
@@ -132,6 +138,7 @@ export default function useAngryHandlers(
 
     handleOpenIfNotClosing(e);
     await nextTick();
+    console.log(e);
     if (document.activeElement !== searchElement) {
       handleFocusInput();
       return;
@@ -225,10 +232,10 @@ export default function useAngryHandlers(
     return options;
   });
 
-  const activeDescendantId = computed<string | null>(() => {
+  const activeDescendantId = computed<string | undefined>(() => {
     if (activeDescendant.value) {
       return activeDescendant.value?.id;
-    } else return null;
+    } else return undefined;
   });
 
   onMounted(() => window.addEventListener("scroll", windowScrollHideListener));
@@ -340,9 +347,11 @@ export default function useAngryHandlers(
   }
 
   function setCurrentlyHighlightedListItem(
-    el: HTMLLIElement,
+    el: MaybeElement<HTMLLIElement>,
     scrollIntoView = false
   ) {
+    if (!el) return;
+
     const active = getCurrentlyHighlightedListItem();
     active?.classList.remove("active");
 

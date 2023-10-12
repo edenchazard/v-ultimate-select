@@ -65,7 +65,9 @@
               class="select-list-option"
               :aria-selected="ids.includes(id.toString())"
               :data-key="id"
-              @pointerenter="setCurrentlyHighlightedListItem($event.target)"
+              @pointerenter="
+                setCurrentlyHighlightedListItem($event.target as HTMLLIElement)
+              "
               @click="handleSelectListItem"
             >
               <slot
@@ -95,6 +97,7 @@ import "../assets/style.css";
 import type {
   AngryMultiSelectEvents,
   OptionKey,
+  MenuState,
   AngryMultiSelectProps,
 } from "../types";
 import MultipleContainer from "./MultipleContainer.vue";
@@ -117,7 +120,7 @@ const activeDescendant = ref<HTMLLIElement>();
 
 const search = ref<string>("");
 const open = ref<boolean>(false);
-const state = ref<"closing" | "opening" | "none">("none");
+const state = ref<MenuState>("none");
 const nodeId = computed(() => props.htmlId ?? generateId());
 
 const {

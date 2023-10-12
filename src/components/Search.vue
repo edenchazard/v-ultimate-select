@@ -23,7 +23,6 @@ const emit = defineEmits<{
 
 <style>
 .search {
-  box-sizing: border-box;
   background: transparent;
   color: #000;
   border: 0;

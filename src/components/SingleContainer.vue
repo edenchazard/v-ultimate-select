@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import type { OptionValue } from "@/types";
 import Search from "./Search.vue";
 
 const emit = defineEmits<{
@@ -31,7 +32,7 @@ const emit = defineEmits<{
 
 interface Props {
   placeholder?: string;
-  modelValue: string;
+  modelValue: OptionValue;
   autocomplete?: boolean;
 }
 
@@ -44,8 +45,7 @@ const props = withDefaults(defineProps<Props>(), {
 .select-box-single {
   flex: 1;
   display: flex;
-  height: 100%; /* 
-  align-items: center; */
+  align-self: center;
 }
 
 .search {

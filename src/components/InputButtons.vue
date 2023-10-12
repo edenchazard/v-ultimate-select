@@ -10,7 +10,7 @@
         @click.stop="emit('clear', $event)"
       >
         <FontAwesomeIcon
-          class="icon"
+          class="icon clear-icon"
           icon="x"
         />
       </span>
@@ -19,7 +19,7 @@
     <slot name="caret">
       <span class="select-box-button caret">
         <FontAwesomeIcon
-          class="icon"
+          class="icon caret-icon"
           icon="caret-down"
         />
       </span>
@@ -40,6 +40,7 @@ const emit = defineEmits<{
 .select-box-inputs {
   display: flex;
 }
+
 .select-box-button {
   cursor: pointer;
   display: flex;
@@ -48,14 +49,13 @@ const emit = defineEmits<{
   border: none;
   padding: 0.5rem;
 }
-.caret {
+
+.caret-icon {
   transition: transform 0.5s;
+  position: relative;
 }
-.open .caret {
-  transform: rotate(0deg);
-}
-.clear {
-}
-.icon {
+
+.open .caret-icon {
+  transform: rotate(180deg);
 }
 </style>

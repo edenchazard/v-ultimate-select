@@ -1,12 +1,11 @@
 import type { HTMLAttributes } from "vue";
 
 type MenuLocation = "auto" | "modal" | "above" | "below";
-type PropOptions = Array<string | OptionValue>;
+type PropOptions = OptionValue[];
 
 type OptionValue = Record<string, any>;
 type OptionKey = number | string;
 
-// <key, value>
 type OptionsMap = Map<OptionKey, OptionValue>;
 
 type SelectValue = OptionKey | OptionKey[];
@@ -16,6 +15,8 @@ type MatcherCallback = (
   value: OptionValue,
   key: OptionKey
 ) => boolean;
+
+type MenuState = "closing" | "opening" | "none";
 
 interface AngrySelectProps {
   /**
@@ -190,6 +191,7 @@ export type {
   OptionKey,
   OptionValue,
   MatcherCallback,
+  MenuState,
   PropOptions,
   SelectValue,
   OptionsMap,

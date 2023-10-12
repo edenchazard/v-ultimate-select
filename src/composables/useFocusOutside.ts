@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, toRef, nextTick, ref } from "vue";
+import { onMounted, onUnmounted, toRef, nextTick } from "vue";
 import type { MaybeRef, Ref } from "vue";
 
 type HTMLElementRefArray = Ref<HTMLElement>[];

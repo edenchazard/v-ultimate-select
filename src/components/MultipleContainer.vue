@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="select-box-multiple-container"
-    :style="{
-      minHeight: rowHeight + 'rem',
-    }"
-  >
+  <div class="select-box-multiple-container">
     <template
       v-for="value in values"
       :key="value"
@@ -13,10 +8,7 @@
         name="value"
         :value="value"
       >
-        <MultipleValue
-          :style="{ height: rowHeight + 'rem' }"
-          :value="value"
-        />
+        <MultipleValue :value="value" />
       </slot>
     </template>
     <slot name="placeholder">
@@ -24,7 +16,6 @@
         v-if="autocomplete"
         class="search"
         :modelValue="search"
-        :style="{ height: rowHeight + 'rem' }"
         :placeholder="computePlaceholder"
         @update:modelValue="$emit('update:search', $event)"
       />
@@ -70,21 +61,16 @@ const computePlaceholder = computed<string>(() => {
   flex: 1;
   display: flex;
   column-gap: 0.5rem;
-  row-gap: 0.2rem; /* 
-  transform: translateY(0);
-  transition: transform 0.5s ease-in-out; */
+  row-gap: 0.2rem;
   flex-wrap: wrap;
+  align-self: center;
 }
 
 .search {
-  padding: 0.5rem;
-  display: flex;
-  box-sizing: border-box;
   flex: 1;
 }
 .search:focus {
   outline: none;
-  box-shadow: inset 0 0 1px 2px blue;
 }
 /*.select-box-multiple-value {
     border-radius: 0.25rem;
