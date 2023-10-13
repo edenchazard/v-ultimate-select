@@ -18,6 +18,16 @@ type MatcherCallback = (
 
 type MenuState = "closing" | "opening" | "none";
 
+type InputAriaAttributes = Pick<
+  HTMLAttributes,
+  "aria-expanded" | "aria-autocomplete" | "aria-activedescendant"
+>;
+
+type ListboxAriaAttributes = Pick<
+  HTMLAttributes,
+  "aria-multiselectable" | "aria-label"
+>;
+
 interface AngrySelectProps {
   /**
    * The options list.
@@ -192,6 +202,8 @@ export type {
   OptionValue,
   MatcherCallback,
   MenuState,
+  InputAriaAttributes,
+  ListboxAriaAttributes,
   PropOptions,
   SelectValue,
   OptionsMap,

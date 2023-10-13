@@ -9,20 +9,24 @@
       ref="activator"
       tabindex="0"
       class="select-box"
-      :aria-expanded="open"
-      aria-multiselectable="true"
       :aria-placeholder="placeholder"
       :aria-controls="`${nodeId}-select-list-container`"
-      :aria-activedescendant="activeDescendantId"
-      aria-autocomplete="list"
       @keydown="handleInputKeyUp"
       @pointerdown="handleClick"
     >
       <MultipleContainer
-        :="{ autocomplete, placeholder, values, id: nodeId }"
-        :values="selected"
+        v-bind="{
+          autocomplete,
+          placeholder,
+          values: selected,
+          uuid: nodeId,
+          ariaAttributes: {
+            'aria-activedescendant': activeDescendantId,
+            'aria-autocomplete': 'list',
+            'aria-expanded': open,
+          },
+        }"
         v-model:search="search"
-        :rows="1"
       />
 
       <InputButtons
@@ -43,14 +47,13 @@
       >
         <div
           v-if="open || listbox"
-          :aria-expanded="open"
-          :aria-label="listboxLabel"
+          v-bind="listboxAriaAttributes"
           :id="`${nodeId}-select-list-container`"
           ref="menu"
           role="listbox"
           class="select-list-container"
           :class="classes"
-          :style="listbox ? {} : floatingStyles"
+          :style="floatingStyles"
         >
           <ul
             class="select-list"
@@ -61,10 +64,10 @@
               v-for="[id, data] in filteredOptionsList"
               :key="id"
               :id="`${nodeId}-item-${id}`"
-              role="option"
+              :data-key="id"
               class="select-list-option"
               :aria-selected="ids.includes(id.toString())"
-              :data-key="id"
+              role="option"
               @pointerenter="
                 setCurrentlyHighlightedListItem($event.target as HTMLLIElement)
               "
@@ -99,6 +102,7 @@ import type {
   OptionKey,
   MenuState,
   AngryMultiSelectProps,
+  ListboxAriaAttributes,
 } from "../types";
 import MultipleContainer from "./MultipleContainer.vue";
 import InputButtons from "./InputButtons.vue";
@@ -161,6 +165,11 @@ const {
   state,
   props as Required<AngryMultiSelectProps>
 );
+
+const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
+  "aria-multiselectable": true,
+  "aria-label": props.listboxLabel,
+}));
 
 const selected = computed(() => {
   const get = (key: OptionKey) =>

@@ -17,7 +17,8 @@
         class="search"
         :modelValue="search"
         :placeholder="computePlaceholder"
-        @update:modelValue="$emit('update:search', $event)"
+        :ariaAttributes="ariaAttributes"
+        @update:modelValue="emit('update:search', $event)"
       />
       <span v-else>{{ computePlaceholder }}</span>
     </slot>
@@ -26,6 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import type { InputAriaAttributes } from "@/types";
 import MultipleValue from "./MultipleValue.vue";
 import Search from "./Search.vue";
 
@@ -36,6 +38,8 @@ interface Props {
   rows?: number;
   rowHeight?: number;
   autocomplete?: boolean;
+  ariaAttributes: InputAriaAttributes;
+  uuid: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
