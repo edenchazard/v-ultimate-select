@@ -5,6 +5,7 @@
       class="search"
       :placeholder="placeholder"
       :modelValue="modelValue"
+      :ariaAttributes="ariaAttributes"
       @update:modelValue="emit('update:modelValue', $event)"
     />
     <slot
@@ -23,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import type { OptionValue } from "@/types";
+import type { InputAriaAttributes, OptionValue } from "@/types";
 import Search from "./Search.vue";
 
 const emit = defineEmits<{
@@ -34,6 +35,8 @@ interface Props {
   placeholder?: string;
   modelValue: OptionValue;
   autocomplete?: boolean;
+  ariaAttributes: InputAriaAttributes;
+  uuid: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {

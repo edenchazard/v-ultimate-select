@@ -9,16 +9,23 @@
       ref="activator"
       tabindex="0"
       class="select-box"
-      :aria-expanded="open"
       :aria-placeholder="placeholder"
       :aria-controls="`${nodeId}-select-list-container`"
-      :aria-activedescendant="activeDescendantId"
-      aria-autocomplete="list"
       @keydown="handleInputKeyUp"
       @pointerdown="handleClick"
     >
       <SingleContainer
-        :="{ autocomplete, placeholder, id: nodeId }"
+        v-bind="{
+          autocomplete,
+          placeholder,
+          values: selected,
+          uuid: nodeId,
+          ariaAttributes: {
+            'aria-activedescendant': activeDescendantId,
+            'aria-autocomplete': 'list',
+            'aria-expanded': open,
+          },
+        }"
         :model-value="value"
       />
       <InputButtons
@@ -39,14 +46,12 @@
       >
         <div
           v-if="open || listbox"
-          :aria-expanded="open"
-          :aria-label="listboxLabel"
           :id="`${nodeId}-select-list-container`"
           ref="menu"
           role="listbox"
           class="select-list-container"
           :class="classes"
-          :style="listbox ? {} : floatingStyles"
+          :style="floatingStyles"
         >
           <ul
             class="select-list"
@@ -94,6 +99,7 @@ import type {
   AngrySingleSelectEvents,
   OptionKey,
   MenuState,
+  ListboxAriaAttributes,
   AngrySingleSelectProps,
 } from "../types";
 import SingleContainer from "./SingleContainer.vue";
@@ -157,6 +163,11 @@ const {
   state,
   props as Required<AngrySingleSelectProps>
 );
+
+const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
+  "aria-multiselectable": true,
+  "aria-label": props.listboxLabel,
+}));
 
 const selected = computed(() => {
   return internalOptions.value.get(parseInt(props.id))?.[props.trackByKey];

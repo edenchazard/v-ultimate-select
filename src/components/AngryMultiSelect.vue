@@ -47,13 +47,15 @@
       >
         <div
           v-if="open || listbox"
-          v-bind="listboxAriaAttributes"
-          :id="`${nodeId}-select-list-container`"
+          v-bind="{
+            ...listboxAriaAttributes,
+            id: `${nodeId}-select-list-container`,
+            class: classes,
+            style: floatingStyles,
+          }"
           ref="menu"
           role="listbox"
           class="select-list-container"
-          :class="classes"
-          :style="floatingStyles"
         >
           <ul
             class="select-list"
@@ -167,7 +169,7 @@ const {
 );
 
 const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
-  "aria-multiselectable": true,
+  "aria-multiselectable": false,
   "aria-label": props.listboxLabel,
 }));
 

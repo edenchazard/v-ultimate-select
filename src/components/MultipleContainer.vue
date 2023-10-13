@@ -35,11 +35,11 @@ interface Props {
   search: string;
   placeholder?: string;
   values: string[];
-  rows?: number;
-  rowHeight?: number;
   autocomplete?: boolean;
   ariaAttributes: InputAriaAttributes;
   uuid: string;
+  rows?: number;
+  rowHeight?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
