@@ -174,13 +174,6 @@ interface AngrySelectEvents {
    * Emitted whenever an option has been selected.
    */
   (event: "selected", key: OptionKey, value: OptionValue): void;
-
-  /**
-   * TODO
-   *
-   * Emitted whenever the combobox's value has been changed.
-   */
-  (event: "update:values", values: OptionValue | OptionValue[]): void;
 }
 
 interface AngrySingleSelectEvents extends AngrySelectEvents {
@@ -188,6 +181,13 @@ interface AngrySingleSelectEvents extends AngrySelectEvents {
    * Emitted whenever the combobox's value has been changed.
    */
   (event: "update:id", value: SelectValue): void;
+
+  /**
+   * TODO
+   *
+   * Emitted whenever the combobox's value has been changed.
+   */
+  (event: "update:modelValue", value: OptionValue): void;
 }
 
 interface AngryMultiSelectEvents extends AngrySelectEvents {
@@ -195,6 +195,13 @@ interface AngryMultiSelectEvents extends AngrySelectEvents {
    * Emitted whenever the combobox's value has been changed.
    */
   (event: "update:ids", value: SelectValue): void;
+
+  /**
+   * TODO
+   *
+   * Emitted whenever the combobox's value has been changed.
+   */
+  (event: "update:values", values: OptionValue[]): void;
 }
 
 export type {

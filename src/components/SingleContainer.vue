@@ -3,8 +3,8 @@
     <Search
       v-if="autocomplete"
       class="search"
-      :placeholder="placeholder"
       :modelValue="modelValue"
+      :placeholder="placeholder"
       :ariaAttributes="ariaAttributes"
       @update:modelValue="emit('update:modelValue', $event)"
     />

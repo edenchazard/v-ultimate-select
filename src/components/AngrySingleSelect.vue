@@ -18,7 +18,7 @@
         v-bind="{
           autocomplete,
           placeholder,
-          values: selected,
+          modelValue: selected,
           uuid: nodeId,
           ariaAttributes: {
             'aria-activedescendant': activeDescendantId,
@@ -26,7 +26,7 @@
             'aria-expanded': open,
           },
         }"
-        :model-value="value"
+        @update:modelValue="emit('update:modelValue', $event)"
       />
       <InputButtons
         @open="handleOpenIfNotClosing"

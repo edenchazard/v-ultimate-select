@@ -28,7 +28,7 @@
       :options="[...options, ...options2, ...options3]"
       :close-on-select="config.closeOnSelect"
       v-model:id="singleId"
-      v-model:value="singleValue"
+      v-model="singleValue"
       :search-handler="config.customMatcher ? customMatcher : null"
       @selected="(key, value) => (selected = { key, value })"
     />
