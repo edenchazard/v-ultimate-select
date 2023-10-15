@@ -1,24 +1,41 @@
 <template>
   <div class="select-box-multiple-container">
     <template
-      v-for="value in values"
+      v-for="(value, $index) in values"
       :key="value"
     >
       <slot
         name="value"
         :value="value"
       >
-        <MultipleValue :value="value" />
+        <span class="select-box-multiple-value">
+          <span class="select-box-multiple-value-label">
+            {{ trackByKey === null ? value : value[labelKey as string] }}
+          </span>
+          <span class="select-box-multiple-value-remove">
+            <span
+              class="select-box-multiple-value-remove-inside"
+              @remove="emit('remove', $index)"
+            >
+              <FontAwesomeIcon
+                class="test"
+                icon="x"
+                aria-hidden="true"
+              />
+            </span>
+          </span>
+        </span>
       </slot>
     </template>
+
     <slot name="placeholder">
       <Search
         v-if="autocomplete"
         class="search"
-        :modelValue="search"
+        :value="search"
         :placeholder="computePlaceholder"
         :ariaAttributes="ariaAttributes"
-        @update:modelValue="emit('update:search', $event)"
+        @input="emit('update:search', $event.target.value)"
       />
       <span v-else>{{ computePlaceholder }}</span>
     </slot>
@@ -27,28 +44,34 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import type { InputAriaAttributes } from "@/types";
-import MultipleValue from "./MultipleValue.vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import type {
+  AngryMultiSelectProps,
+  InputAriaAttributes,
+  MultipleValue,
+} from "@/types";
 import Search from "./Search.vue";
 
 interface Props {
   search: string;
   placeholder?: string;
-  values: string[];
+  values: MultipleValue[];
   autocomplete?: boolean;
   ariaAttributes: InputAriaAttributes;
+  trackByKey: AngryMultiSelectProps["trackByKey"];
+  labelKey: AngryMultiSelectProps["labelKey"];
   uuid: string;
-  rows?: number;
-  rowHeight?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  rows: 2,
-  rowHeight: 1.5,
+  trackByKey: null,
+  labelKey: "value",
 });
 
 const emit = defineEmits<{
   (event: "update:search", value: string): void;
+
+  (event: "remove", index: number): void;
 }>();
 
 const computePlaceholder = computed<string>(() => {
@@ -76,11 +99,38 @@ const computePlaceholder = computed<string>(() => {
 .search:focus {
   outline: none;
 }
-/*.select-box-multiple-value {
-    border-radius: 0.25rem;
-    background: rgb(49, 167, 98);
-    color: #fff;
-    padding: 0.1rem 0.5rem;
-    font-size: 0.8rem;
-  }*/
+
+.select-box-multiple-value {
+  border-radius: 0.25rem;
+  background: rgb(49, 167, 98);
+  color: #fff;
+  font-size: 0.8rem;
+  display: flex;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.select-box-multiple-value-label {
+  padding: 0 0.4rem;
+  align-self: center;
+}
+
+.select-box-multiple-value-remove {
+  padding: 0.2rem 0.2rem 0.2rem 0rem;
+  display: flex;
+}
+.select-box-multiple-value-remove-inside {
+  display: flex;
+  padding: 0 0.2rem;
+  border-left: 1px solid #fff;
+}
+.test {
+  align-self: center;
+  height: 0.6rem;
+  margin-left: 0.3rem;
+}
+
+.select-box-multiple-value-remove:hover {
+  background: hsl(145, 55%, 30%);
+}
 </style>

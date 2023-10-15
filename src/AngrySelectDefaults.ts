@@ -6,11 +6,12 @@ const AngrySelectDefaults: Omit<AngrySelectProps, "options"> = {
   dropDownMaxHeight: 300,
   maximumSelections: 0,
   minimumSelections: 0,
-  labelField: "value",
-  trackByKey: "value",
+  labelKey: "value",
+  trackByKey: null,
   listboxLabel: "TODO",
   closeOnSelect: true,
   menuLocation: "auto",
+  openOnClick: false,
 };
 
 export default AngrySelectDefaults;

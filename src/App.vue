@@ -12,30 +12,59 @@
     </section>
 
     <h2>Multiselect</h2>
+    <h3>Simple string array</h3>
     <AngryMultiSelect
       :="config"
-      :options="[...options, ...options2, ...options3]"
-      v-model:ids="multiIds"
-      :close-on-select="config.closeOnSelect"
+      :options="options123"
+      v-model="multi"
       :search-handler="config.customMatcher ? customMatcher : null"
     />
-    <div>Selected IDs: {{ multiIds }}</div>
-    <div>Selected values: {{ multiValues }}</div>
+    <div>
+      Selected values:<code class="code-inline">{{ multi }}</code>
+    </div>
+
+    <h3>With objects as values</h3>
+    <AngryMultiSelect
+      :="config"
+      :options="options4"
+      v-model="multiWithObjects"
+      track-by-key="id"
+      label-key="value"
+      :search-handler="config.customMatcher ? customMatcher : null"
+    />
+    <div>
+      Selected values: <code class="code-inline">{{ multiWithObjects }}</code>
+    </div>
 
     <h2>Single select</h2>
+    <h3>Simple string array</h3>
     <AngrySingleSelect
       :="config"
-      :options="[...options, ...options2, ...options3]"
-      :close-on-select="config.closeOnSelect"
-      v-model:id="singleId"
-      v-model="singleValue"
+      :options="options123"
+      v-model="single"
       :search-handler="config.customMatcher ? customMatcher : null"
-      @selected="(key, value) => (selected = { key, value })"
     />
-    <div>Selected ID: {{ singleId }}</div>
-    <div>Selected value: {{ singleValue }}</div>
+    <div>
+      Selected values:<code class="code-inline">{{ single }}</code>
+    </div>
 
-    <h2>Configuration</h2>
+    <h2>Demo configuration</h2>
+    <h3>Objects as values options</h3>
+    <p>
+      <code class="code-inline">track-by-key</code> is
+      <code class="code-inline">id</code>, with
+      <code class="code-inline">label-key</code> set to
+      <code class="code-inline">value</code>
+    </p>
+    <p>
+      Options:
+      <code class="code-inline">{{ options4 }}</code>
+    </p>
+    <h3>Simple string array options</h3>
+    <p>
+      <code class="code-inline">{{ options123 }}</code>
+    </p>
+    <h3>Props</h3>
     <div id="config">
       <input
         type="checkbox"
@@ -44,7 +73,10 @@
       />
       <div>
         <label for="close-on-select">Close on select</label>
-        <p>Keep the select open after choosing an option, or close it.</p>
+        <p>
+          If enabled, whenever an option is selected, the options list will
+          close.
+        </p>
       </div>
       <input
         type="checkbox"
@@ -68,6 +100,39 @@
         </p>
       </div>
       <input
+        type="checkbox"
+        v-model="config.openOnClick"
+        id="open-on-click"
+      />
+      <div>
+        <label for="open-on-click">Open on click</label>
+        <p>
+          By default the options list will only appear after typing, but you can
+          have it open on click too.
+        </p>
+      </div>
+      <select
+        v-model="config.menuLocation"
+        id="menu-location"
+      >
+        <option
+          v-for="location in ['auto', 'above', 'below']"
+          :value="location"
+        >
+          {{ location }}
+        </option>
+      </select>
+      <div>
+        <label for="menu-location">Menu Location</label>
+        <p>
+          By default this is set to auto: the select will try to show the
+          options list below the activator, and above the activator should it
+          exceed
+          <code class="code-inline">maxHeight</code>. You can force it to show
+          on a particular side by setting this prop.
+        </p>
+      </div>
+      <input
         type="text"
         v-model="config.placeholder"
         id="placeholder"
@@ -84,14 +149,12 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import type { OptionValue } from "./types";
+import type { AngrySelectProps, OptionValue, MenuLocation } from "./types";
 import AngryMultiSelect from "./components/AngryMultiSelect.vue";
 import AngrySingleSelect from "./components/AngrySingleSelect.vue";
 
 const options = ["John", "Lauren", "Michelle", "Mike"];
-
 const options2 = ["Pig", "Goat", "Duck", "Cow", "Chicken", "Sheep", "Horse"];
-
 const options3 = [
   "Red",
   "Blue",
@@ -107,20 +170,41 @@ const options3 = [
   "Mud",
 ];
 
-const config = reactive({
+const options123 = [...options, ...options2, ...options3];
+
+const options4 = [
+  {
+    id: 5,
+    value: "Pomeranian",
+  },
+  {
+    id: 7,
+    value: "Labrador",
+  },
+  {
+    id: 9,
+    value: "Husky",
+  },
+];
+
+const config = reactive<{
+  [x: string]: any;
+  menuLocation: MenuLocation;
+}>({
   closeOnSelect: true,
   autocomplete: true,
   listbox: false,
   customMatcher: false,
   placeholder: undefined,
+  menuLocation: "auto",
+  openOnClick: true,
 });
 
-const singleValue = ref(null);
-const singleId = ref(null);
-const selected = ref({ key: null, value: null });
+const single = ref(null);
 
-const multiValues = ref([]);
-const multiIds = ref([]);
+const multi = ref([]);
+
+const multiWithObjects = ref<{ id: number; value: string }>([]);
 
 function customMatcher(search: string, option: OptionValue): boolean {
   return option.value.toString().startsWith(search);
@@ -169,5 +253,15 @@ h1 {
 h2 {
   font-size: 2.5rem;
   line-height: 2.5rem;
+}
+h3 {
+  font-size: 1.8rem;
+  line-height: 1.8rem;
+}
+
+.code-inline {
+  display: inline;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0 0.5rem;
 }
 </style>

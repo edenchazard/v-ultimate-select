@@ -7,7 +7,7 @@
         role="button"
         type="button"
         class="select-box-button clear"
-        @click.stop="emit('clear', $event)"
+        @click="emit('clear', $event)"
       >
         <FontAwesomeIcon
           class="icon clear-icon"
@@ -17,7 +17,10 @@
     </slot>
 
     <slot name="caret">
-      <span class="select-box-button caret">
+      <span
+        class="select-box-button caret"
+        @click="emit('open', $event)"
+      >
         <FontAwesomeIcon
           class="icon caret-icon"
           icon="caret-down"

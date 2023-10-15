@@ -3,12 +3,13 @@ import type { HTMLAttributes } from "vue";
 type MenuLocation = "auto" | "modal" | "above" | "below";
 type PropOptions = OptionValue[];
 
-type OptionValue = Record<string, any>;
+type SingleValue = string;
+type MultipleValue = Record<string, any>;
+
+type OptionValue<T extends SingleValue | MultipleValue = any> = T;
 type OptionKey = number | string;
 
 type OptionsMap = Map<OptionKey, OptionValue>;
-
-type SelectValue = OptionKey | OptionKey[];
 
 type MatcherCallback = (
   search: string,
@@ -54,13 +55,13 @@ interface AngrySelectProps {
    * A unique key for each option that differentiates it from other options
    * in the list.
    */
-  trackByKey?: OptionKey;
+  trackByKey?: OptionKey | null;
 
   /**
    * A key to use for displaying an option's label. This should be the
    * text you'd like to present the user with.
    */
-  labelField?: string;
+  labelKey?: string;
 
   /**
    * TODO
@@ -117,37 +118,19 @@ interface AngrySelectProps {
   searchHandler?: MatcherCallback;
 
   menuLocation?: MenuLocation;
+
+  openOnClick?: boolean;
+
+  modelValue: OptionValue[];
 }
 
 interface AngrySingleSelectProps extends AngrySelectProps {
-  /**
-   * TODO
-   *
-   * wanna make this a v-model of all the selected values
-   */
-  value: OptionValue | null;
-
-  /**
-   * The id of the selected option's value.
-   *
-   * If `multiple` is true, this will be an array of the option IDs.
-   */
-  id: OptionKey | null;
+  //todo remove
+  modelValue: OptionValue | null;
 }
 
 interface AngryMultiSelectProps extends AngrySelectProps {
-  /**
-   * TODO
-   *
-   * wanna make this a v-model of all the selected values
-   */
-  values: OptionValue[];
-  /**
-   * The id of the selected option's value.
-   *
-   * If `multiple` is true, this will be an array of the option IDs.
-   */
-  ids: OptionKey[];
+  //todo remove
 }
 
 interface AngrySelectEvents {
@@ -173,14 +156,14 @@ interface AngrySelectEvents {
   /**
    * Emitted whenever an option has been selected.
    */
-  (event: "selected", key: OptionKey, value: OptionValue): void;
+  (event: "selected", value: OptionValue): void;
 }
 
 interface AngrySingleSelectEvents extends AngrySelectEvents {
   /**
    * Emitted whenever the combobox's value has been changed.
    */
-  (event: "update:id", value: SelectValue): void;
+  //(event: "update:id", value: OptionValue): void;
 
   /**
    * TODO
@@ -194,25 +177,26 @@ interface AngryMultiSelectEvents extends AngrySelectEvents {
   /**
    * Emitted whenever the combobox's value has been changed.
    */
-  (event: "update:ids", value: SelectValue): void;
+  //(event: "update:ids", value: OptionValue): void;
 
   /**
    * TODO
    *
    * Emitted whenever the combobox's value has been changed.
    */
-  (event: "update:values", values: OptionValue[]): void;
+  (event: "update:modelValue", values: OptionValue[]): void;
 }
 
 export type {
   OptionKey,
   OptionValue,
   MatcherCallback,
+  SingleValue,
+  MultipleValue,
   MenuState,
   InputAriaAttributes,
   ListboxAriaAttributes,
   PropOptions,
-  SelectValue,
   OptionsMap,
   MenuLocation,
   AngrySelectProps,

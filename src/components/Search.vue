@@ -4,9 +4,7 @@
     class="search"
     type="text"
     role="combobox"
-    :value="modelValue"
     :="ariaAttributes"
-    @input="(e) => emit('update:modelValue', e.target.value)"
   />
 </template>
 
@@ -14,15 +12,10 @@
 import type { InputAriaAttributes } from "@/types";
 
 interface Props {
-  modelValue: string;
   ariaAttributes: InputAriaAttributes;
 }
 
 defineProps<Props>();
-
-const emit = defineEmits<{
-  (event: "update:modelValue", value: string): void;
-}>();
 </script>
 
 <style>

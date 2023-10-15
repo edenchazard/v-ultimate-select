@@ -15,7 +15,7 @@ type MaybeElementRef<T extends MaybeElement = MaybeElement> = Ref<
 >;
 
 type ListItemSelectHandlerCallback = <T extends Event>(
-  option: { id: OptionKey; value: OptionValue },
+  option: OptionValue<any>,
   e: T
 ) => void;
 
@@ -124,24 +124,18 @@ export default function useAngryHandlers(
     const searchElement = getSearchElement();
 
     if (!searchElement) return;
-
-    await nextTick();
+    console.log(searchElement);
     search.value += appendCharacter;
     searchElement.focus();
   }
 
   async function handleClick(e: PointerEvent) {
-    const searchElement = getSearchElement();
-
-    if (e.target === searchElement) {
-    }
-
-    handleOpenIfNotClosing(e);
     await nextTick();
-    console.log(e);
-    if (document.activeElement !== searchElement) {
-      handleFocusInput();
-      return;
+
+    handleFocusInput();
+
+    if (props.openOnClick) {
+      handleOpenIfNotClosing(e);
     }
   }
 
@@ -173,11 +167,10 @@ export default function useAngryHandlers(
     const defaultSearchMatcher: MatcherCallback = (
       search: string,
       value: OptionValue
-    ) =>
-      (value[props.labelField].toString() as string)
-        .toLowerCase()
-        .trim()
-        .indexOf(search.toLowerCase()) !== -1;
+    ) => {
+      const test = props.trackByKey === null ? value : value[props.labelKey];
+      return test.trim().toLowerCase().startsWith(search.toLowerCase());
+    };
 
     // we should use the user-provided callback if given.
     const matchesCriteria = props.searchHandler
@@ -202,33 +195,30 @@ export default function useAngryHandlers(
     const options = new Map<OptionKey, OptionValue>();
 
     props.options.forEach((opt, index) => {
-      let key: OptionKey;
-      let data: Record<string, unknown> = {};
+      let key: OptionKey = index;
 
-      switch (typeof opt) {
-        case "object":
-          if (!(props.trackByKey in opt)) {
-            throw new Error(
-              `Object ${opt} is missing the key field: ${props.trackByKey}`
-            );
-          }
-
-          key = opt[props.trackByKey];
-          data = opt;
-          break;
-
-        case "string":
-          key = index;
-          data = { value: opt };
-          break;
-
-        default:
-          throw new Error("Can't understand options.");
+      if (props.trackByKey !== null) {
+        if (typeof opt !== "object") {
+          throw new Error(
+            `The select's trackByKey was specified as ${props.trackByKey}, 
+            indicating this select uses objects as values.
+            But ${JSON.stringify(opt)} is not an object`
+          );
+        } else if (props.trackByKey in opt === false) {
+          throw new Error(
+            `The select's trackByKey was specified as ${props.trackByKey}, 
+            but ${JSON.stringify(opt)} doesn't have a property matching it.`
+          );
+        }
+      } else if (typeof opt !== "string") {
+        throw new Error(
+          `The select's trackByKey is null, indicating this select uses strings
+          as values. But ${opt.toString()} isn't a simple string value.`
+        );
       }
 
-      options.set(key, data);
+      options.set(key.toString(), opt);
     });
-
     return options;
   });
 
@@ -245,11 +235,10 @@ export default function useAngryHandlers(
 
   function handleInputKeyUp(e: KeyboardEvent) {
     const key = e.key;
-    const searchElement = getSearchElement();
 
     // it was probably alphanumeric? but we only care about improvising
     // if the search isn't already under focus
-    if (key.length === 1 && document.activeElement !== searchElement) {
+    if (key.length === 1) {
       handleOpenIfNotClosing(e);
       e.preventDefault();
       handleFocusInput(key);
@@ -290,13 +279,7 @@ export default function useAngryHandlers(
 
     if (!active) return;
 
-    listItemSelectHandler(
-      {
-        id: active.dataset.key,
-        value: getItem(active.dataset.key),
-      },
-      e
-    );
+    listItemSelectHandler(getItem(active.dataset.key), e);
   }
 
   /**
@@ -341,9 +324,7 @@ export default function useAngryHandlers(
   }
 
   function getItem(key: OptionKey) {
-    return internalOptions.value.get(parseInt(key as string))?.[
-      props.trackByKey
-    ];
+    return internalOptions.value.get(key);
   }
 
   function setCurrentlyHighlightedListItem(
@@ -358,12 +339,25 @@ export default function useAngryHandlers(
     el.classList.add("active");
     activeDescendant.value = el;
 
-    if (scrollIntoView) el.scrollIntoView({ block: "nearest" });
+    if (scrollIntoView)
+      el.scrollIntoView({
+        block: "nearest",
+      });
   }
 
   function getCurrentlyHighlightedListItem(): ListOptionElement | null {
     const item = menu.value?.querySelector(".active");
     return item === undefined ? null : (item as ListOptionElement);
+  }
+
+  function isSelected(option: OptionValue): boolean {
+    if (props.trackByKey === null) {
+      return props.modelValue.includes(option);
+    }
+
+    return !!props.modelValue.find(
+      (o) => o[props.trackByKey] === option[props.trackByKey]
+    );
   }
 
   // shouldn't be in here, but for now.
@@ -389,6 +383,7 @@ export default function useAngryHandlers(
     setListItemSelectAction,
     handleFocusNextListItem,
     generateId, // <-- move this out of the comnposable at some point
+    isSelected,
 
     /** handlers */
     handleClearSearch,

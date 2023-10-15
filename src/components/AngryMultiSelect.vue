@@ -9,16 +9,18 @@
       ref="activator"
       tabindex="0"
       class="select-box"
-      :aria-placeholder="placeholder"
       :aria-controls="`${nodeId}-select-list-container`"
+      :aria-placeholder="placeholder"
       @keydown="handleInputKeyUp"
-      @pointerdown="handleClick"
+      @click="handleClick"
     >
       <MultipleContainer
         v-bind="{
           autocomplete,
           placeholder,
-          values: selected,
+          values: modelValue,
+          labelKey,
+          trackByKey,
           uuid: nodeId,
           ariaAttributes: {
             'aria-activedescendant': activeDescendantId,
@@ -46,7 +48,7 @@
         @after-leave="state = 'none'"
       >
         <div
-          v-if="open || listbox"
+          v-if="open"
           v-bind="{
             ...listboxAriaAttributes,
             id: `${nodeId}-select-list-container`,
@@ -63,12 +65,12 @@
             v-if="filteredOptionsList.size > 0"
           >
             <li
-              v-for="[id, data] in filteredOptionsList"
+              v-for="[id, value] in filteredOptionsList"
               :key="id"
               :id="`${nodeId}-item-${id}`"
               :data-key="id"
               class="select-list-option"
-              :aria-selected="ids.includes(id.toString())"
+              :aria-selected="isSelected(value)"
               role="option"
               @pointerenter="
                 setCurrentlyHighlightedListItem($event.target as HTMLLIElement)
@@ -77,9 +79,9 @@
             >
               <slot
                 name="option"
-                :option="data"
+                :option="value"
               >
-                {{ data[trackByKey] }}
+                {{ trackByKey === null ? value : value[labelKey as string] }}
               </slot>
             </li>
           </ul>
@@ -97,7 +99,7 @@
 
 <script setup lang="ts">
 import "reset-css";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import "../assets/style.css";
 import type {
   AngryMultiSelectEvents,
@@ -105,6 +107,7 @@ import type {
   MenuState,
   AngryMultiSelectProps,
   ListboxAriaAttributes,
+  OptionValue,
 } from "../types";
 import MultipleContainer from "./MultipleContainer.vue";
 import InputButtons from "./InputButtons.vue";
@@ -134,6 +137,7 @@ const {
   filteredOptionsList,
   internalOptions,
   floatingStyles,
+
   placement,
   classes,
   activeDescendantId,
@@ -147,6 +151,7 @@ const {
   setListItemSelectAction,
   handleFocusNextListItem,
   generateId,
+  isSelected,
 
   /** handlers */
   handleClearSearch,
@@ -169,38 +174,36 @@ const {
 );
 
 const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
-  "aria-multiselectable": false,
+  "aria-multiselectable": true,
   "aria-label": props.listboxLabel,
 }));
 
-const selected = computed(() => {
-  const get = (key: OptionKey) =>
-    internalOptions.value.get(parseInt(key as string))?.[props.trackByKey];
-
-  return (props.ids as OptionKey[]).map(get);
-});
-
 setListItemSelectAction((option, e) => {
-  const previous = [...props.ids];
-  const exists = previous.indexOf(option.id);
-
+  console.log(option);
+  const previous = [...props.modelValue];
+  const exists =
+    props.trackByKey === null
+      ? previous.indexOf(option)
+      : previous.findIndex(
+          (o) => o[props.trackByKey] === option[props.trackByKey]
+        );
   // remove it
   if (exists > -1) {
     previous.splice(exists, 1);
   }
   // add it
   else {
-    previous.push(option.id);
+    previous.push(option);
   }
 
   handleClearSearch();
 
-  emit("update:ids", previous);
-  emit("selected", option.id, option.value);
+  emit("update:modelValue", previous);
+  emit("selected", option.value);
 });
 
 function handleClear() {
-  emit("update:ids", []);
+  emit("update:modelValue", []);
   emit("clear");
 }
 </script>

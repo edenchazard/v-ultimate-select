@@ -1,7 +1,7 @@
 <template>
   <span class="select-box-multiple-value">
     <slot>
-      <span class="select-box-multiple-value-label">{{ value }}</span>
+      <span class="select-box-multiple-value-label">{{ text }}</span>
       <span class="select-box-multiple-value-remove">
         <span class="select-box-multiple-value-remove-inside">
           <FontAwesomeIcon
@@ -19,7 +19,7 @@
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 defineProps<{
-  value: string;
+  text: string;
 }>();
 
 const emit = defineEmits<{

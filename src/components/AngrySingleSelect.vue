@@ -9,16 +9,16 @@
       ref="activator"
       tabindex="0"
       class="select-box"
-      :aria-placeholder="placeholder"
       :aria-controls="`${nodeId}-select-list-container`"
+      :aria-placeholder="placeholder"
       @keydown="handleInputKeyUp"
-      @pointerdown="handleClick"
+      @click="handleClick"
     >
       <SingleContainer
         v-bind="{
           autocomplete,
           placeholder,
-          modelValue: selected,
+          value: modelValue,
           uuid: nodeId,
           ariaAttributes: {
             'aria-activedescendant': activeDescendantId,
@@ -45,13 +45,16 @@
         @after-leave="state = 'none'"
       >
         <div
-          v-if="open || listbox"
-          :id="`${nodeId}-select-list-container`"
+          v-if="open"
+          v-bind="{
+            ...listboxAriaAttributes,
+            id: `${nodeId}-select-list-container`,
+            class: classes,
+            style: floatingStyles,
+          }"
           ref="menu"
           role="listbox"
           class="select-list-container"
-          :class="classes"
-          :style="floatingStyles"
         >
           <ul
             class="select-list"
@@ -59,13 +62,13 @@
             v-if="filteredOptionsList.size > 0"
           >
             <li
-              v-for="[id, data] in filteredOptionsList"
+              v-for="[id, value] in filteredOptionsList"
               :key="id"
               :id="`${nodeId}-item-${id}`"
-              role="option"
-              class="select-list-option"
-              :aria-selected="id.toString() === id"
               :data-key="id"
+              class="select-list-option"
+              :aria-selected="isSelected(value)"
+              role="option"
               @pointerenter="
                 setCurrentlyHighlightedListItem($event.target as HTMLLIElement)
               "
@@ -73,9 +76,9 @@
             >
               <slot
                 name="option"
-                :option="data"
+                :option="value"
               >
-                {{ data[trackByKey] }}
+                {{ trackByKey === null ? value : value[labelKey as string] }}
               </slot>
             </li>
           </ul>
@@ -83,8 +86,8 @@
             name="noResults"
             v-else
           >
-            <p>No results.</p></slot
-          >
+            <p>No results.</p>
+          </slot>
         </div>
       </Transition>
     </Teleport>
@@ -130,6 +133,7 @@ const {
   filteredOptionsList,
   internalOptions,
   floatingStyles,
+
   placement,
   classes,
   activeDescendantId,
@@ -143,6 +147,7 @@ const {
   setListItemSelectAction,
   handleFocusNextListItem,
   generateId,
+  isSelected,
 
   /** handlers */
   handleClearSearch,
@@ -165,25 +170,19 @@ const {
 );
 
 const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
-  "aria-multiselectable": true,
+  "aria-multiselectable": false,
   "aria-label": props.listboxLabel,
 }));
-
-const selected = computed(() => {
-  return internalOptions.value.get(parseInt(props.id))?.[props.trackByKey];
-});
-
-function handleClear() {
-  emit("update:id", null);
-  emit("clear");
-}
 
 setListItemSelectAction((option, e) => {
   //handleClearSearch();
 
-  emit("update:id", option.value);
-  emit("selected", option.id, option.value);
+  emit("update:modelValue", option.value);
+  emit("selected", option.value);
 });
-</script>
 
-<style></style>
+function handleClear() {
+  emit("update:modelValue", null);
+  emit("clear");
+}
+</script>

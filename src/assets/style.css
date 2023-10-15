@@ -21,7 +21,7 @@
     padding: 0.25rem 0.5rem;
 
     &.active {
-      background: #6495ed !important;
+      background: rgba(68, 143, 255, 0.8) !important;
     }
 
     &[aria-selected="true"] {
@@ -48,7 +48,7 @@
 }
 
 .open .select-box,
-.select-box:focus {
+.select-box:focus-within {
   outline: 5px solid rgba(68, 143, 255, 0.8);
 }
 
