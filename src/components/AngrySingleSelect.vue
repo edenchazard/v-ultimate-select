@@ -10,7 +10,6 @@
       tabindex="0"
       class="select-box"
       :aria-controls="`${nodeId}-select-list-container`"
-      :aria-placeholder="placeholder"
       @keydown="handleInputKeyUp"
       @click="handleClick"
     >
@@ -26,7 +25,7 @@
             'aria-expanded': open,
           },
         }"
-        @update:modelValue="emit('update:modelValue', $event)"
+        v-model:search="search"
       />
       <InputButtons
         @open="handleOpenIfNotClosing"
@@ -96,11 +95,10 @@
 
 <script setup lang="ts">
 import "reset-css";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import "../assets/style.css";
 import type {
   AngrySingleSelectEvents,
-  OptionKey,
   MenuState,
   ListboxAriaAttributes,
   AngrySingleSelectProps,
@@ -127,6 +125,15 @@ const search = ref<string>("");
 const open = ref<boolean>(false);
 const state = ref<MenuState>("none");
 const nodeId = computed(() => props.htmlId ?? generateId());
+
+watchEffect(() => {
+  if (props.modelValue === null) {
+    search.value = "";
+    return;
+  }
+
+  search.value = props.modelValue;
+});
 
 const {
   /** refs */
@@ -175,10 +182,10 @@ const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
 }));
 
 setListItemSelectAction((option, e) => {
-  //handleClearSearch();
+  handleClearSearch();
 
-  emit("update:modelValue", option.value);
-  emit("selected", option.value);
+  emit("update:modelValue", option);
+  emit("selected", option);
 });
 
 function handleClear() {

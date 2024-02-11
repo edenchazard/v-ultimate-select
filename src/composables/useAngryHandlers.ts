@@ -112,9 +112,7 @@ export default function useAngryHandlers(
     listItemSelectHandler = (option, e) => {
       callback(option, e);
 
-      if (props.closeOnSelect) {
-        handleBlur();
-      }
+      if (props.closeOnSelect) handleBlur();
     };
   }
 
@@ -124,12 +122,11 @@ export default function useAngryHandlers(
     const searchElement = getSearchElement();
 
     if (!searchElement) return;
-    console.log(searchElement);
     search.value += appendCharacter;
     searchElement.focus();
   }
 
-  async function handleClick(e: PointerEvent) {
+  async function handleClick(e: PointerEvent | MouseEvent) {
     await nextTick();
 
     handleFocusInput();
@@ -142,13 +139,6 @@ export default function useAngryHandlers(
   /* prevents the menu quickly closing and re-opening if the activator is clicked
   (because we'd be clicking outside the list box AND clicking the box straight after*/
   function handleOpenIfNotClosing(e: Event) {
-    /*   if (e instanceof KeyboardEvent) {
-   if (["enter", "space"].includes(e.key) === false) {
-      console.log(e, open.value);
-      return;
-    }
-  } else if (e instanceof PointerEvent) {
-  } */
     if (!open.value && state.value === "none") open.value = true;
   }
 
@@ -160,7 +150,7 @@ export default function useAngryHandlers(
 
   const filteredOptionsList = computed(() => {
     // no search applied
-    if (search.value === "") {
+    if (["", null, undefined].includes(search.value)) {
       return internalOptions.value;
     }
 
@@ -229,6 +219,7 @@ export default function useAngryHandlers(
   });
 
   onMounted(() => window.addEventListener("scroll", windowScrollHideListener));
+
   onUnmounted(() =>
     window.removeEventListener("scroll", windowScrollHideListener)
   );
@@ -308,8 +299,9 @@ export default function useAngryHandlers(
   }
 
   function handleBlur() {
+    if (props.clearSearchStringOnBlur) handleClearSearch();
+
     open.value = false;
-    handleClearSearch();
     activeDescendant.value = undefined;
   }
 
@@ -352,7 +344,8 @@ export default function useAngryHandlers(
 
   function isSelected(option: OptionValue): boolean {
     if (props.trackByKey === null) {
-      return props.modelValue.includes(option);
+      // this actually works on both strings AND arrays lulz
+      return props.modelValue?.indexOf(option) > -1;
     }
 
     return !!props.modelValue.find(

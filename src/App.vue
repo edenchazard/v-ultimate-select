@@ -17,7 +17,7 @@
       :="config"
       :options="options123"
       v-model="multi"
-      :search-handler="config.customMatcher ? customMatcher : null"
+      :search-handler="config.customMatcher ? customMatcherString : null"
     />
     <div>
       Selected values:<code class="code-inline">{{ multi }}</code>
@@ -30,7 +30,7 @@
       v-model="multiWithObjects"
       track-by-key="id"
       label-key="value"
-      :search-handler="config.customMatcher ? customMatcher : null"
+      :search-handler="config.customMatcher ? customMatcherObject : null"
     />
     <div>
       Selected values: <code class="code-inline">{{ multiWithObjects }}</code>
@@ -42,14 +42,27 @@
       :="config"
       :options="options123"
       v-model="single"
-      :search-handler="config.customMatcher ? customMatcher : null"
+      :search-handler="config.customMatcher ? customMatcherString : null"
+    />
+    <div>
+      Selected values:<code class="code-inline">{{ single }}</code>
+    </div>
+
+    <h3>With objects as values</h3>
+    <AngrySingleSelect
+      :="config"
+      :options="options4"
+      v-model="singleWithObjects"
+      track-by-key="id"
+      label-key="value"
+      :search-handler="config.customMatcher ? customMatcherObject : null"
     />
     <div>
       Selected values:<code class="code-inline">{{ single }}</code>
     </div>
 
     <h2>Demo configuration</h2>
-    <h3>Objects as values options</h3>
+    <h3>With objects as values options</h3>
     <p>
       <code class="code-inline">track-by-key</code> is
       <code class="code-inline">id</code>, with
@@ -111,6 +124,17 @@
           have it open on click too.
         </p>
       </div>
+      <input
+        type="checkbox"
+        v-model="config.clearSearchStringOnBlur"
+        id="clear-search-string-on-blur"
+      />
+      <div>
+        <label for="clear-search-string-on-blur"
+          >Clear Search String On Blur</label
+        >
+        <p>If true, when unfocused, the search string will be cleared.</p>
+      </div>
       <select
         v-model="config.menuLocation"
         id="menu-location"
@@ -149,7 +173,12 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import type { AngrySelectProps, OptionValue, MenuLocation } from "./types";
+import type {
+  AngrySelectProps,
+  OptionValue,
+  MenuLocation,
+  MatcherCallback,
+} from "./types";
 import AngryMultiSelect from "./components/AngryMultiSelect.vue";
 import AngrySingleSelect from "./components/AngrySingleSelect.vue";
 
@@ -198,17 +227,21 @@ const config = reactive<{
   placeholder: undefined,
   menuLocation: "auto",
   openOnClick: true,
+  clearSearchStringOnBlur: false,
 });
 
 const single = ref(null);
+const singleWithObjects = ref<{ id: number; value: string } | null>(null);
 
 const multi = ref([]);
-
 const multiWithObjects = ref<{ id: number; value: string }>([]);
 
-function customMatcher(search: string, option: OptionValue): boolean {
-  return option.value.toString().startsWith(search);
-}
+const customMatcherObject: MatcherCallback = (search, option) => {
+  return option["value"].toString().startsWith(search);
+};
+const customMatcherString: MatcherCallback = (search, option) => {
+  return option.toString().startsWith(search);
+};
 </script>
 
 <style scoped>
