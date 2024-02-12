@@ -10,7 +10,6 @@
       tabindex="0"
       class="select-box"
       :aria-controls="`${nodeId}-select-list-container`"
-      :aria-placeholder="placeholder"
       @keydown="handleInputKeyUp"
       @click="handleClick"
     >
@@ -29,6 +28,7 @@
           },
         }"
         v-model:search="search"
+        @remove="removeSelectedItem"
       />
 
       <InputButtons
@@ -179,7 +179,6 @@ const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
 }));
 
 setListItemSelectAction((option, e) => {
-  console.log(option);
   const previous = [...props.modelValue];
   const exists =
     props.trackByKey === null
@@ -199,11 +198,17 @@ setListItemSelectAction((option, e) => {
   handleClearSearch();
 
   emit("update:modelValue", previous);
-  emit("selected", option.value);
+  emit("selected", option);
 });
 
 function handleClear() {
   emit("update:modelValue", []);
   emit("clear");
+}
+
+function removeSelectedItem(index: number) {
+  const newValue = [...props.modelValue];
+  newValue.splice(index, 1);
+  emit("update:modelValue", newValue);
 }
 </script>

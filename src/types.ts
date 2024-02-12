@@ -11,11 +11,7 @@ type OptionKey = number | string;
 
 type OptionsMap = Map<OptionKey, OptionValue>;
 
-type MatcherCallback = (
-  search: string,
-  value: OptionValue,
-  key: OptionKey
-) => boolean;
+type MatcherCallback = (search: string, option: OptionValue) => boolean;
 
 type MenuState = "closing" | "opening" | "none";
 
@@ -115,22 +111,23 @@ interface AngrySelectProps {
    * A callback that defines how the combobox will filter options
    * when searching.
    */
-  searchHandler?: MatcherCallback;
+  searchHandler?: MatcherCallback | null;
 
   menuLocation?: MenuLocation;
 
   openOnClick?: boolean;
 
-  modelValue: OptionValue[];
+  modelValue: unknown;
+
+  clearSearchStringOnBlur?: boolean;
 }
 
 interface AngrySingleSelectProps extends AngrySelectProps {
-  //todo remove
   modelValue: OptionValue | null;
 }
 
 interface AngryMultiSelectProps extends AngrySelectProps {
-  //todo remove
+  modelValue: OptionValue[];
 }
 
 interface AngrySelectEvents {

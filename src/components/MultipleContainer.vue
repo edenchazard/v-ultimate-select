@@ -15,7 +15,7 @@
           <span class="select-box-multiple-value-remove">
             <span
               class="select-box-multiple-value-remove-inside"
-              @remove="emit('remove', $index)"
+              @click.stop="emit('remove', $index)"
             >
               <FontAwesomeIcon
                 class="test"
@@ -47,30 +47,25 @@ import { computed } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import type {
   AngryMultiSelectProps,
+  AngrySelectProps,
   InputAriaAttributes,
-  MultipleValue,
 } from "@/types";
 import Search from "./Search.vue";
 
-interface Props {
-  search: string;
-  placeholder?: string;
-  values: MultipleValue[];
-  autocomplete?: boolean;
-  ariaAttributes: InputAriaAttributes;
-  trackByKey: AngryMultiSelectProps["trackByKey"];
-  labelKey: AngryMultiSelectProps["labelKey"];
-  uuid: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  trackByKey: null,
-  labelKey: "value",
-});
+const props = defineProps<
+  Pick<
+    AngrySelectProps,
+    "placeholder" | "autocomplete" | "trackByKey" | "labelKey"
+  > & {
+    ariaAttributes: InputAriaAttributes;
+    uuid: string;
+    values: AngryMultiSelectProps["modelValue"];
+    search: string;
+  }
+>();
 
 const emit = defineEmits<{
   (event: "update:search", value: string): void;
-
   (event: "remove", index: number): void;
 }>();
 

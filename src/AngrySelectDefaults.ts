@@ -1,6 +1,6 @@
 import type { AngrySelectProps } from "./types";
 
-const AngrySelectDefaults: Omit<AngrySelectProps, "options"> = {
+const AngrySelectDefaults: Omit<AngrySelectProps, "options" | "modelValue"> = {
   listbox: false,
   fullPageIfDropdownTooBig: true,
   dropDownMaxHeight: 300,
@@ -12,6 +12,9 @@ const AngrySelectDefaults: Omit<AngrySelectProps, "options"> = {
   closeOnSelect: true,
   menuLocation: "auto",
   openOnClick: false,
+  placeholder: "Select a value",
+  autocomplete: true,
+  clearSearchStringOnBlur: false,
 };
 
 export default AngrySelectDefaults;

@@ -3,45 +3,51 @@
     <Search
       v-if="autocomplete"
       class="search"
-      :modelValue="modelValue"
+      :value="search"
       :placeholder="placeholder"
       :ariaAttributes="ariaAttributes"
-      @update:modelValue="emit('update:modelValue', $event)"
+      @input.prevent="emit('update:search', $event.target.value)"
     />
     <slot
-      name="value"
-      v-else-if="modelValue"
-    >
-      {{ modelValue }}
-    </slot>
-    <slot
       name="placeholder"
-      v-else-if="modelValue.length === 0"
+      v-else-if="value.length === 0"
     >
       {{ placeholder }}
+    </slot>
+    <slot
+      name="value"
+      v-else
+    >
+      {{ trackByKey === null ? value : value[labelKey as string] }}
     </slot>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { InputAriaAttributes, OptionValue } from "@/types";
+import type {
+  AngrySelectProps,
+  AngrySingleSelectProps,
+  InputAriaAttributes,
+  OptionValue,
+} from "@/types";
 import Search from "./Search.vue";
 
 const emit = defineEmits<{
   (event: "update:modelValue", value: string): void;
+  (event: "update:search", value: string): void;
 }>();
 
-interface Props {
-  placeholder?: string;
-  modelValue: OptionValue;
-  autocomplete?: boolean;
-  ariaAttributes: InputAriaAttributes;
-  uuid: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  placeholder: "Select an option",
-});
+defineProps<
+  Pick<
+    AngrySelectProps,
+    "placeholder" | "autocomplete" | "trackByKey" | "labelKey"
+  > & {
+    ariaAttributes: InputAriaAttributes;
+    uuid: string;
+    value: AngrySingleSelectProps["modelValue"];
+    search?: string;
+  }
+>();
 </script>
 
 <style scoped>
