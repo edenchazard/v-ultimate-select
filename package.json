@@ -41,7 +41,6 @@
     "@vueuse/core": "^10.3.0",
     "@vueuse/integrations": "^10.3.0",
     "focus-trap": "^7.5.2",
-    "pinia": "^2.0.33",
     "reset-css": "^5.0.1",
     "vue": "^3.3.4"
   },
