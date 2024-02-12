@@ -9,30 +9,19 @@
         class="select-box-button clear"
         @click.stop="emit('clear', $event)"
       >
-        <FontAwesomeIcon
-          class="icon clear-icon"
-          icon="x"
-        />
+        <img src="../assets/x-solid.svg" class="icon" />
       </span>
     </slot>
 
     <slot name="caret">
-      <span
-        class="select-box-button caret"
-        @click.stop="emit('open', $event)"
-      >
-        <FontAwesomeIcon
-          class="icon caret-icon"
-          icon="caret-down"
-        />
+      <span class="select-box-button caret" @click.stop="emit('open', $event)">
+        <img src="../assets/caret-down-solid.svg" class="caret-icon icon" />
       </span>
     </slot>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-
 const emit = defineEmits<{
   (event: "clear", e: Event): void;
   (event: "open", e: Event): void;
@@ -53,9 +42,10 @@ const emit = defineEmits<{
   padding: 0.5rem;
 }
 
-.caret-icon {
+.icon {
   transition: transform 0.5s;
   position: relative;
+  width: 0.75rem;
 }
 
 .open .caret-icon {

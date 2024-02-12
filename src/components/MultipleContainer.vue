@@ -1,28 +1,10 @@
 <template>
   <div class="select-box-multiple-container">
-    <template
-      v-for="(value, $index) in values"
-      :key="value"
-    >
-      <slot
-        name="value"
-        :value="value"
-      >
+    <template v-for="(value, $index) in values" :key="value">
+      <slot name="value" :value="value">
         <span class="select-box-multiple-value">
           <span class="select-box-multiple-value-label">
             {{ trackByKey === null ? value : value[labelKey as string] }}
-          </span>
-          <span class="select-box-multiple-value-remove">
-            <span
-              class="select-box-multiple-value-remove-inside"
-              @click.stop="emit('remove', $index)"
-            >
-              <FontAwesomeIcon
-                class="test"
-                icon="x"
-                aria-hidden="true"
-              />
-            </span>
           </span>
         </span>
       </slot>
@@ -44,12 +26,11 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import type {
   AngryMultiSelectProps,
   AngrySelectProps,
   InputAriaAttributes,
-} from "@/types";
+} from "../types";
 import Search from "./Search.vue";
 
 const props = defineProps<

@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import type { InputAriaAttributes } from "@/types";
+import type { InputAriaAttributes } from "../types";
 
 interface Props {
   ariaAttributes: InputAriaAttributes;

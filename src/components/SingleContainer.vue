@@ -8,16 +8,10 @@
       :ariaAttributes="ariaAttributes"
       @input.prevent="emit('update:search', $event.target.value)"
     />
-    <slot
-      name="placeholder"
-      v-else-if="value.length === 0"
-    >
+    <slot name="placeholder" v-else-if="value.length === 0">
       {{ placeholder }}
     </slot>
-    <slot
-      name="value"
-      v-else
-    >
+    <slot name="value" v-else>
       {{ trackByKey === null ? value : value[labelKey as string] }}
     </slot>
   </div>
@@ -29,7 +23,7 @@ import type {
   AngrySingleSelectProps,
   InputAriaAttributes,
   OptionValue,
-} from "@/types";
+} from "../types";
 import Search from "./Search.vue";
 
 const emit = defineEmits<{

@@ -4,11 +4,7 @@
       <span class="select-box-multiple-value-label">{{ text }}</span>
       <span class="select-box-multiple-value-remove">
         <span class="select-box-multiple-value-remove-inside">
-          <FontAwesomeIcon
-            class="test"
-            icon="x"
-            aria-hidden="true"
-          />
+          <img src="../assets/caret-down-solid.svg" class="icon" />
         </span>
       </span>
     </slot>
@@ -16,8 +12,6 @@
 </template>
 
 <script setup lang="ts">
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-
 defineProps<{
   text: string;
 }>();
@@ -51,11 +45,6 @@ const emit = defineEmits<{
   display: flex;
   padding: 0 0.2rem;
   border-left: 1px solid #fff;
-}
-.test {
-  align-self: center;
-  height: 0.6rem;
-  margin-left: 0.3rem;
 }
 
 .select-box-multiple-value-remove:hover {
