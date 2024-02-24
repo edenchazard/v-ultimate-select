@@ -36,31 +36,6 @@
       Selected values: <code class="code-inline">{{ multiWithObjects }}</code>
     </div>
 
-    <h2>Single select</h2>
-    <h3>Simple string array</h3>
-    <AngrySingleSelect
-      :="config"
-      :options="options123"
-      v-model="single"
-      :search-handler="config.customMatcher ? customMatcherString : null"
-    />
-    <div>
-      Selected values:<code class="code-inline">{{ single }}</code>
-    </div>
-
-    <h3>With objects as values</h3>
-    <AngrySingleSelect
-      :="config"
-      :options="options4"
-      v-model="singleWithObjects"
-      track-by-key="id"
-      label-key="value"
-      :search-handler="config.customMatcher ? customMatcherObject : null"
-    />
-    <div>
-      Selected values:<code class="code-inline">{{ single }}</code>
-    </div>
-
     <h2>Demo configuration</h2>
     <h3>With objects as values options</h3>
     <p>
@@ -173,14 +148,8 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import type {
-  AngrySelectProps,
-  OptionValue,
-  MenuLocation,
-  MatcherCallback,
-} from "./types";
+import type { MenuLocation, MatcherCallback } from "./types";
 import AngryMultiSelect from "./components/AngryMultiSelect.vue";
-import AngrySingleSelect from "./components/AngrySingleSelect.vue";
 
 const options = ["John", "Lauren", "Michelle", "Mike"];
 const options2 = ["Pig", "Goat", "Duck", "Cow", "Chicken", "Sheep", "Horse"];
@@ -229,9 +198,6 @@ const config = reactive<{
   openOnClick: true,
   clearSearchStringOnBlur: false,
 });
-
-const single = ref(null);
-const singleWithObjects = ref<{ id: number; value: string } | null>(null);
 
 const multi = ref([]);
 const multiWithObjects = ref<{ id: number; value: string }>([]);

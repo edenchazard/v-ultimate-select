@@ -9,13 +9,22 @@
         class="select-box-button clear"
         @click.stop="emit('clear', $event)"
       >
-        <img src="../assets/x-solid.svg" class="icon" />
+        <img
+          src="../assets/x-solid.svg"
+          class="icon"
+        />
       </span>
     </slot>
 
     <slot name="caret">
-      <span class="select-box-button caret" @click.stop="emit('open', $event)">
-        <img src="../assets/caret-down-solid.svg" class="caret-icon icon" />
+      <span
+        class="select-box-button caret"
+        @click.stop="emit('open', $event)"
+      >
+        <img
+          src="../assets/caret-down-solid.svg"
+          class="caret-icon icon"
+        />
       </span>
     </slot>
   </div>
@@ -31,6 +40,8 @@ const emit = defineEmits<{
 <style>
 .select-box-inputs {
   display: flex;
+  align-self: self-start;
+  height: var(--item-height);
 }
 
 .select-box-button {
@@ -39,11 +50,11 @@ const emit = defineEmits<{
   flex: 1;
   background: transparent;
   border: none;
-  padding: 0.5rem;
+  padding: 0 0.5rem;
 }
 
 .icon {
-  transition: transform 0.5s;
+  transition: transform 0.25s;
   position: relative;
   width: 0.75rem;
 }

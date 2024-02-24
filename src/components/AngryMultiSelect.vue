@@ -13,23 +13,44 @@
       @keydown="handleInputKeyUp"
       @click="handleClick"
     >
-      <MultipleContainer
-        v-bind="{
-          autocomplete,
-          placeholder,
-          values: modelValue,
-          labelKey,
-          trackByKey,
-          uuid: nodeId,
-          ariaAttributes: {
-            'aria-activedescendant': activeDescendantId,
-            'aria-autocomplete': 'list',
-            'aria-expanded': open,
-          },
-        }"
-        v-model:search="search"
-        @remove="removeSelectedItem"
-      />
+      <div class="select-box-multiple-container">
+        <template
+          v-for="(value, $index) in modelValue"
+          :key="value"
+        >
+          <slot
+            name="value"
+            :value="value"
+            :remove="() => removeSelectedItem($index)"
+          >
+            <span class="select-box-multiple-value">
+              <span class="select-box-multiple-value-label">
+                {{ trackByKey === null ? value : value[labelKey as string] }}
+              </span>
+            </span>
+          </slot>
+        </template>
+        <slot
+          name="placeholder"
+          :value="search"
+          :placeholder="computePlaceholder"
+          :ariaAttributes="ariaAttributes"
+        >
+          <input
+            v-if="autocomplete"
+            class="search"
+            tabindex="-1"
+            type="text"
+            v-model="search"
+            role="combobox"
+            :aria-expanded="ariaAttributes['aria-expanded']"
+            aria-autocomplete="list"
+            :aria-activedescendant="ariaAttributes['aria-activedescendant']"
+            :placeholder="computePlaceholder"
+          />
+          <span v-else>{{ computePlaceholder }}</span>
+        </slot>
+      </div>
 
       <InputButtons
         @open="handleOpenIfNotClosing"
@@ -89,7 +110,7 @@
             name="noResults"
             v-else
           >
-            <p>No results.</p>
+            <p class="no-results">No results.</p>
           </slot>
         </div>
       </Transition>
@@ -98,23 +119,52 @@
 </template>
 
 <script setup lang="ts">
-import "reset-css";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import "../assets/style.css";
 import type {
-  AngryMultiSelectEvents,
-  OptionKey,
-  MenuState,
   AngryMultiSelectProps,
   ListboxAriaAttributes,
+  MenuState,
   OptionValue,
 } from "../types";
-import MultipleContainer from "./MultipleContainer.vue";
 import InputButtons from "./InputButtons.vue";
 import useAngryHandlers from "../composables/useAngryHandlers";
 import AngrySelectDefaults from "../AngrySelectDefaults";
 
-const emit = defineEmits<AngryMultiSelectEvents>();
+const emit = defineEmits<{
+  (event: "update:search", value: string): void;
+  (event: "remove", index: number): void;
+  /**
+   * Emitted whenever the combobox is opened.
+   *
+   * This event doesn't trigger if `listbox` is true.
+   */
+  (event: "open"): void;
+
+  /**
+   * Emitted whenever the combobox is closed.
+   *
+   * This event doesn't trigger if `listbox` is true.
+   */
+  (event: "close"): void;
+
+  /**
+   * Emitted whenever the combobox is cleared.
+   */
+  (event: "clear"): void;
+
+  /**
+   * Emitted whenever an option has been selected.
+   */
+  (event: "selected", value: OptionValue): void;
+
+  /**
+   * TODO
+   *
+   * Emitted whenever the combobox's value has been changed.
+   */
+  (event: "update:modelValue", values: OptionValue[]): void;
+}>();
 
 const props = withDefaults(
   defineProps<AngryMultiSelectProps>(),
@@ -176,6 +226,20 @@ const {
 const listboxAriaAttributes = computed<ListboxAriaAttributes>(() => ({
   "aria-multiselectable": true,
   "aria-label": props.listboxLabel,
+}));
+
+const computePlaceholder = computed<string>(() => {
+  if (typeof props.placeholder === "undefined") {
+    return props.modelValue.length > 0 ? "Add another" : "Select an option";
+  }
+
+  return props.placeholder;
+});
+
+const ariaAttributes = computed(() => ({
+  "aria-activedescendant": activeDescendantId.value,
+  "aria-autocomplete": "list",
+  "aria-expanded": open.value,
 }));
 
 setListItemSelectAction((option, e) => {

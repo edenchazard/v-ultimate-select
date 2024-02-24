@@ -130,59 +130,7 @@ interface AngryMultiSelectProps extends AngrySelectProps {
   modelValue: OptionValue[];
 }
 
-interface AngrySelectEvents {
-  /**
-   * Emitted whenever the combobox is opened.
-   *
-   * This event doesn't trigger if `listbox` is true.
-   */
-  (event: "open"): void;
-
-  /**
-   * Emitted whenever the combobox is closed.
-   *
-   * This event doesn't trigger if `listbox` is true.
-   */
-  (event: "close"): void;
-
-  /**
-   * Emitted whenever the combobox is cleared.
-   */
-  (event: "clear"): void;
-
-  /**
-   * Emitted whenever an option has been selected.
-   */
-  (event: "selected", value: OptionValue): void;
-}
-
-interface AngrySingleSelectEvents extends AngrySelectEvents {
-  /**
-   * Emitted whenever the combobox's value has been changed.
-   */
-  //(event: "update:id", value: OptionValue): void;
-
-  /**
-   * TODO
-   *
-   * Emitted whenever the combobox's value has been changed.
-   */
-  (event: "update:modelValue", value: OptionValue): void;
-}
-
-interface AngryMultiSelectEvents extends AngrySelectEvents {
-  /**
-   * Emitted whenever the combobox's value has been changed.
-   */
-  //(event: "update:ids", value: OptionValue): void;
-
-  /**
-   * TODO
-   *
-   * Emitted whenever the combobox's value has been changed.
-   */
-  (event: "update:modelValue", values: OptionValue[]): void;
-}
+interface AngrySelectEvents {}
 
 export type {
   OptionKey,
@@ -200,6 +148,4 @@ export type {
   AngryMultiSelectProps,
   AngrySingleSelectProps,
   AngrySelectEvents,
-  AngrySingleSelectEvents,
-  AngryMultiSelectEvents,
 };
