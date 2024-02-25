@@ -9,11 +9,13 @@ export default defineConfig({
     vue(),
     dts({
       entryRoot: "./src",
+      exclude: ["**/*.spec.ts", "src/main.ts"],
     }),
   ],
   build: {
     outDir: "./dist",
     emptyOutDir: true,
+    copyPublicDir: false,
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "VueAngrySelect",
