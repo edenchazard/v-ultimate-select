@@ -13,6 +13,14 @@
       @keydown="handleInputKeyUp"
       @click="handleClick"
     >
+      <p class="sr-only">
+        {{
+          (trackByKey === null
+            ? modelValue
+            : modelValue.map((value) => value[labelKey as string])
+          ).join(", ")
+        }}
+      </p>
       <div class="select-box-multiple-container">
         <template
           v-for="(value, $index) in modelValue"
@@ -23,11 +31,15 @@
             :value="value"
             :remove="() => removeSelectedItem($index)"
           >
-            <span class="select-box-multiple-value">
-              <span class="select-box-multiple-value-label">
-                {{ trackByKey === null ? value : value[labelKey as string] }}
-              </span>
-            </span>
+            <button
+              class="select-box-multiple-value"
+              type="button"
+              tabindex="-1"
+              @pointerdown.prevent
+              @click.stop="removeSelectedItem($index)"
+            >
+              {{ trackByKey === null ? value : value[labelKey as string] }}
+            </button>
           </slot>
         </template>
         <slot
@@ -51,11 +63,35 @@
           <span v-else>{{ computePlaceholder }}</span>
         </slot>
       </div>
+      <div class="select-box-inputs">
+        <slot name="clear">
+          <span
+            title="Clear selection"
+            aria-hidden="true"
+            role="button"
+            type="button"
+            class="select-box-button clear"
+            @click.stop="handleClear"
+          >
+            <img
+              src="../assets/x-solid.svg"
+              class="icon"
+            />
+          </span>
+        </slot>
 
-      <InputButtons
-        @open="handleOpenIfNotClosing"
-        @clear="handleClear"
-      />
+        <slot name="caret">
+          <span
+            class="select-box-button caret"
+            @click.stop="handleOpenIfNotClosing"
+          >
+            <img
+              src="../assets/caret-down-solid.svg"
+              class="caret-icon icon"
+            />
+          </span>
+        </slot>
+      </div>
     </div>
 
     <Teleport
@@ -100,6 +136,7 @@
             >
               <slot
                 name="option"
+                :id="id"
                 :option="value"
               >
                 {{ trackByKey === null ? value : value[labelKey as string] }}
@@ -127,13 +164,12 @@ import type {
   MenuState,
   OptionValue,
 } from "../types";
-import InputButtons from "./InputButtons.vue";
 import useAngryHandlers from "../composables/useAngryHandlers";
 import AngrySelectDefaults from "../AngrySelectDefaults";
 
 const emit = defineEmits<{
   (event: "update:search", value: string): void;
-  (event: "remove", index: number): void;
+  (event: "remove", value: OptionValue, index: number): void;
   /**
    * Emitted whenever the combobox is opened.
    *
@@ -274,5 +310,6 @@ function removeSelectedItem(index: number) {
   const newValue = [...props.modelValue];
   newValue.splice(index, 1);
   emit("update:modelValue", newValue);
+  emit("remove", props.modelValue[index], index);
 }
 </script>

@@ -42,6 +42,7 @@
 }
 
 .select-box {
+  --item-height: 1.5rem;
   display: flex;
   border: 1px solid lightgray;
   border-radius: 0.25rem;
@@ -56,21 +57,36 @@
   &:hover {
     border-color: lightblue;
   }
+
+  & .select-box-inputs {
+    display: flex;
+    align-self: self-start;
+    height: var(--item-height);
+  }
+
+  & .select-box-button {
+    cursor: pointer;
+    display: flex;
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0 0.5rem;
+  }
+
+  & .icon {
+    transition: transform 0.25s;
+    position: relative;
+    width: 0.75rem;
+  }
+
+  & .open .caret-icon {
+    transform: rotate(180deg);
+  }
 }
 
 .open .select-box,
 .select-box:focus-within {
   outline: 5px solid rgba(68, 143, 255, 0.8);
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 250ms ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
 }
 
 .select-box-multiple-container {
@@ -103,30 +119,33 @@
   background: rgb(49, 167, 98);
   color: #fff;
   font-size: 0.8rem;
-  display: inline-block;
-  overflow: hidden;
   box-sizing: border-box;
   height: var(--item-height);
-}
-
-.select-box-multiple-value-label {
-  padding: 0 0.4rem;
-  align-self: center;
-}
-
-.select-box-multiple-value-remove {
-  padding: 0.2rem 0.2rem 0.2rem 0rem;
+  padding: 0 0.5rem;
+  font-weight: normal;
+  border: 0;
   display: flex;
-}
-.select-box-multiple-value-remove-inside {
-  display: flex;
-  padding: 0 0.2rem;
-  border-left: 1px solid #fff;
-}
-.select-box-multiple-value-remove:hover {
-  background: hsl(145, 55%, 30%);
+  align-items: center;
 }
 
-.select-box-multiple-container {
-  --item-height: 1.5rem;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 250ms ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
