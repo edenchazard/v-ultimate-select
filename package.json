@@ -4,6 +4,7 @@
   "version": "0.1.5",
   "type": "module",
   "author": "Charley Reeson (https://chazza.me)",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/edenchazard/vue-angry-select"
   },
